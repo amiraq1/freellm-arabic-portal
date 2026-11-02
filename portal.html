@@ -1,0 +1,2584 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بوابة واجهات LLM المجانية — النسخة الرابعة الموحدة والمدققة (v4.0 Audited — FreeLLM.net )</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Cairo & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Cairo', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        slate: {
+                            850: '#131c2e',
+                            925: '#0a0f1d',
+                            950: '#050811',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #050811;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+        .code-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0f1d;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #10b981;
+        }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.82);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(51, 65, 85, 0.65);
+        }
+        .glass-card:hover {
+            border-color: rgba(16, 185, 129, 0.45);
+        }
+        .grid-bg {
+            background-image: radial-gradient(rgba(16, 185, 129, 0.09) 1px, transparent 1px);
+            background-size: 26px 26px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col grid-bg selection:bg-emerald-500 selection:text-slate-950">
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-5 left-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+
+    <!-- Top Sticky Header -->
+    <header class="sticky top-0 z-40 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Brand Title -->
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-emerald-500/20">
+                        <i class="fa-solid fa-layer-group"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h1 class="text-base sm:text-xl font-extrabold bg-gradient-to-l from-white via-slate-100 to-emerald-400 bg-clip-text text-transparent">
+                                بوابة واجهات LLM المجانية — النسخة الرابعة الموحدة والمدققة
+                            </h1>
+                            <span class="hidden sm:inline-block text-[11px] font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">
+                                v4.0 AUDITED · FREELLM + freellm
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-400">دمج بيانات freellm.net (22 مزوداً، 296 نموذجاً متصلاً) مع مؤشرات FreeLLM وتدقيق الأمان v2.1</p>
+                    </div>
+                </div>
+
+                <!-- 5 Main Desktop Navigation Tabs -->
+                <nav class="hidden lg:flex items-center gap-1 bg-slate-900/90 p-1.5 rounded-xl border border-slate-800">
+                    <button onclick="switchMainTab('models')" id="nav-models" class="nav-btn px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 bg-emerald-500 text-slate-950 shadow-md">
+                        <i class="fa-solid fa-cubes"></i>
+                        <span>1. كتالوج النماذج (<span id="navModelsCount">138</span>)</span>
+                    </button>
+                    <button onclick="switchMainTab('directory')" id="nav-directory" class="nav-btn px-3.5 py-2 rounded-lg text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800/60 transition-all flex items-center gap-1.5">
+                        <i class="fa-solid fa-server"></i>
+                        <span>2. دليل المزودين (22)</span>
+                    </button>
+                    <button onclick="switchMainTab('codegen')" id="nav-codegen" class="nav-btn px-3.5 py-2 rounded-lg text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800/60 transition-all flex items-center gap-1.5">
+                        <i class="fa-solid fa-code"></i>
+                        <span>3. مولد الأكواد وFailover</span>
+                    </button>
+                    <button onclick="switchMainTab('playground')" id="nav-playground" class="nav-btn px-3.5 py-2 rounded-lg text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800/60 transition-all flex items-center gap-1.5">
+                        <i class="fa-solid fa-flask"></i>
+                        <span>4. فاحص المفاتيح و429</span>
+                    </button>
+                    <button onclick="switchMainTab('calculator')" id="nav-calculator" class="nav-btn px-3.5 py-2 rounded-lg text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800/60 transition-all flex items-center gap-1.5">
+                        <i class="fa-solid fa-calculator text-cyan-400"></i>
+                        <span>5. حاسبة التوكن والسجل</span>
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Mobile Navigation Bar -->
+            <div class="flex lg:hidden overflow-x-auto pb-3 pt-1 gap-1.5">
+                <button onclick="switchMainTab('models')" id="mnav-models" class="mnav-btn shrink-0 px-3 py-2 rounded-lg text-xs font-bold bg-emerald-500 text-slate-950 flex items-center gap-1.5">
+                    <i class="fa-solid fa-cubes"></i>
+                    <span>1. الكتالوج</span>
+                </button>
+                <button onclick="switchMainTab('directory')" id="mnav-directory" class="mnav-btn shrink-0 px-3 py-2 rounded-lg text-xs font-bold bg-slate-900 text-slate-300 border border-slate-800 flex items-center gap-1.5">
+                    <i class="fa-solid fa-server"></i>
+                    <span>2. المزودون (22)</span>
+                </button>
+                <button onclick="switchMainTab('codegen')" id="mnav-codegen" class="mnav-btn shrink-0 px-3 py-2 rounded-lg text-xs font-bold bg-slate-900 text-slate-300 border border-slate-800 flex items-center gap-1.5">
+                    <i class="fa-solid fa-code"></i>
+                    <span>3. مولد الكود</span>
+                </button>
+                <button onclick="switchMainTab('playground')" id="mnav-playground" class="mnav-btn shrink-0 px-3 py-2 rounded-lg text-xs font-bold bg-slate-900 text-slate-300 border border-slate-800 flex items-center gap-1.5">
+                    <i class="fa-solid fa-flask"></i>
+                    <span>4. فاحص المفاتيح</span>
+                </button>
+                <button onclick="switchMainTab('calculator')" id="mnav-calculator" class="mnav-btn shrink-0 px-3 py-2 rounded-lg text-xs font-bold bg-slate-900 text-slate-300 border border-slate-800 flex items-center gap-1.5">
+                    <i class="fa-solid fa-calculator"></i>
+                    <span>5. الحاسبة والسجل</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Live Header Stats Banner -->
+    <section class="relative overflow-hidden border-b border-slate-800/80 bg-gradient-to-b from-slate-900/60 to-slate-950 py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+                <div class="max-w-2xl">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold mb-2.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span>تاريخ التوثيق والاستخراج: <code class="code-font" dir="ltr">2026-11-02T14:52:36.082Z</code></span>
+                    </div>
+                    <h2 class="text-xl sm:text-3xl font-black text-white leading-tight">
+                        المرجع الموحد لـ <span class="text-emerald-400">22 مزوداً و296 نموذج LLM مجاني متصل</span>
+                    </h2>
+                    <p class="mt-1.5 text-slate-400 text-xs sm:text-sm leading-relaxed">
+                        يجمع هذا الإصدار الرابع (v4.0 Audited) بين كتالوج <code class="code-font text-emerald-400">freellm.net</code> الكامل ومقاييس <code class="code-font text-cyan-400">FreeLLM (AA Index &amp; GPQA)</code> مع مولد أكواد متوافق مع البث الحي SSE وموجه تبديل تلقائي عند أخطاء <code class="code-font text-amber-400">HTTP 429</code>.
+                    </p>
+                </div>
+
+                <!-- 4 Live Header Stats -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full lg:w-auto">
+                    <div onclick="switchMainTab('models')" class="cursor-pointer p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-emerald-500/50 transition-all">
+                        <div class="text-emerald-400 text-2xl font-mono font-extrabold" dir="ltr">535</div>
+                        <div class="text-xs font-bold text-white mt-0.5">إجمالي النماذج المتتبعة</div>
+                        <div class="text-[11px] text-slate-400 font-mono">totalTracked: 535</div>
+                    </div>
+                    <div onclick="switchMainTab('models')" class="cursor-pointer p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-cyan-500/50 transition-all">
+                        <div class="text-cyan-400 text-2xl font-mono font-extrabold" dir="ltr">296</div>
+                        <div class="text-xs font-bold text-white mt-0.5">مجانية ومتصلة الآن</div>
+                        <div class="text-[11px] text-slate-400 font-mono">freeAndOnline: 296</div>
+                    </div>
+                    <div onclick="switchMainTab('directory')" class="cursor-pointer p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-amber-500/50 transition-all">
+                        <div class="text-amber-400 text-2xl font-mono font-extrabold" dir="ltr">22</div>
+                        <div class="text-xs font-bold text-white mt-0.5">مزودو الخدمة النشطون</div>
+                        <div class="text-[11px] text-slate-400 font-mono">providersCount: 22</div>
+                    </div>
+                    <div onclick="switchMainTab('directory')" class="cursor-pointer p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-purple-500/50 transition-all">
+                        <div class="text-purple-400 text-2xl font-mono font-extrabold" dir="ltr">454</div>
+                        <div class="text-xs font-bold text-white mt-0.5">نماذج بدون بطاقة ائتمان</div>
+                        <div class="text-[11px] text-slate-400 font-mono">noCreditCard: 454</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-7">
+
+        <!-- =================================================================
+             TAB 1: EXPANDED FREE MODELS CATALOG (FreeLLM.net )
+             ================================================================= -->
+        <section id="tab-models" class="space-y-6">
+
+            <!-- Best Picks Strip (6 Cards) -->
+            <div>
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-extrabold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-trophy text-amber-400"></i>
+                        <span>شريط أفضل الاختيارات الموحد (Best Picks — FreeLLM.net  Benchmarks)</span>
+                    </h3>
+                    <span class="text-[11px] text-slate-400">انقر على أي بطاقة لتوليد الكود فوراً</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                    <!-- Pick 1 -->
+                    <div onclick="jumpToModelAction('opencode', 'GLM-5.3', 'codegen')" class="cursor-pointer glass-card rounded-2xl p-4 border-r-4 border-r-emerald-500 flex flex-col justify-between gap-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[11px] font-bold text-emerald-400 flex items-center gap-1.5"><i class="fa-solid fa-crown"></i> 1. الأفضل شاملاً (Best Overall)</span>
+                            <span class="font-mono text-[11px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">1.0M ctx</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="font-mono font-bold text-white text-sm" dir="ltr">GLM 5.3 (glm-5-3)</div>
+                            <span class="text-xs font-mono text-amber-300 font-bold">Score 84</span>
+                        </div>
+                        <div class="flex flex-wrap items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-800/80">
+                            <span>OpenCode Zen / Together</span>
+                            <span class="font-mono text-emerald-300">AA: 44.8 · GPQA: 91.7%</span>
+                        </div>
+                    </div>
+
+                    <!-- Pick 2 -->
+                    <div onclick="jumpToModelAction('nvidia-nim', 'z-ai/glm-5.3-flash', 'codegen')" class="cursor-pointer glass-card rounded-2xl p-4 border-r-4 border-r-cyan-500 flex flex-col justify-between gap-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[11px] font-bold text-cyan-400 flex items-center gap-1.5"><i class="fa-solid fa-laptop-code"></i> 2. الأفضل للبرمجة (Best Coding)</span>
+                            <span class="font-mono text-[11px] px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold">Score 93</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="font-mono font-bold text-white text-sm truncate" dir="ltr">z-ai/glm-5.3-flash</div>
+                            <span class="text-xs font-mono text-cyan-300">1.0M ctx</span>
+                        </div>
+                        <div class="flex flex-wrap items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-800/80">
+                            <span>NVIDIA NIM (Up to 40 RPM)</span>
+                            <span class="font-mono text-cyan-300">15.0B tok/wk · GPQA 91.2%</span>
+                        </div>
+                    </div>
+
+                    <!-- Pick 3 -->
+                    <div onclick="jumpToModelAction('nvidia-nim', 'deepseek-ai/deepseek-v4.1-flash', 'codegen')" class="cursor-pointer glass-card rounded-2xl p-4 border-r-4 border-r-purple-500 flex flex-col justify-between gap-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[11px] font-bold text-purple-400 flex items-center gap-1.5"><i class="fa-solid fa-robot"></i> 3. الأفضل للوكلاء (Best Agents)</span>
+                            <span class="font-mono text-[11px] px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-bold">Score 89</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="font-mono font-bold text-white text-sm truncate" dir="ltr">deepseek-ai/deepseek-v4.1-flash</div>
+                            <span class="text-xs font-mono text-purple-300">1.0M ctx</span>
+                        </div>
+                        <div class="flex flex-wrap items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-800/80">
+                            <span>NVIDIA NIM (Up to 40 RPM)</span>
+                            <span class="font-mono text-purple-300">AA Index: 39.5 · Oct 2026</span>
+                        </div>
+                    </div>
+
+                    <!-- Pick 4 -->
+                    <div onclick="jumpToModelAction('google-gemini', 'Gemini 3.8 Flash', 'codegen')" class="cursor-pointer glass-card rounded-2xl p-4 border-r-4 border-r-rose-500 flex flex-col justify-between gap-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[11px] font-bold text-rose-400 flex items-center gap-1.5"><i class="fa-solid fa-eye"></i> 4. الأفضل للرؤية والوسائط الشاملة</span>
+                            <span class="font-mono text-[11px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-bold">Score 87</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="font-mono font-bold text-white text-sm" dir="ltr">Gemini 3.8 Flash</div>
+                            <span class="text-xs font-mono text-rose-300">1.0M ctx</span>
+                        </div>
+                        <div class="flex flex-wrap items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-800/80">
+                            <span>Google Gemini (Txt/Img/Vid/Aud/PDF)</span>
+                            <span class="font-mono text-rose-300">AA: 40.9 · GPQA: 95.3%</span>
+                        </div>
+                    </div>
+
+                    <!-- Pick 5 -->
+                    <div onclick="jumpToModelAction('openrouter', 'NVIDIA: Nemotron 3 Ultra (free)', 'codegen')" class="cursor-pointer glass-card rounded-2xl p-4 border-r-4 border-r-amber-500 flex flex-col justify-between gap-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[11px] font-bold text-amber-400 flex items-center gap-1.5"><i class="fa-solid fa-fire"></i> 5. الأعلى استهلاكاً مجانياً (5.5T/wk)</span>
+                            <span class="font-mono text-[11px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold">Score 72</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="font-mono font-bold text-white text-sm truncate" dir="ltr">NVIDIA: Nemotron 3 Ultra (free)</div>
+                            <span class="text-xs font-mono text-amber-300">1.0M ctx</span>
+                        </div>
+                        <div class="flex flex-wrap items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-800/80">
+                            <span>OpenRouter</span>
+                            <span class="font-mono text-amber-300">5.5T weekly · GPQA: 86.7%</span>
+                        </div>
+                    </div>
+
+                    <!-- Pick 6 -->
+                    <div onclick="jumpToModelAction('cohere', 'Command R7B Arabic', 'codegen')" class="cursor-pointer glass-card rounded-2xl p-4 border-r-4 border-r-teal-500 flex flex-col justify-between gap-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[11px] font-bold text-teal-400 flex items-center gap-1.5"><i class="fa-solid fa-language"></i> 6. الأفضل للعربية (Arabic Specialized)</span>
+                            <span class="font-mono text-[11px] px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 font-bold">Score 46</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="font-mono font-bold text-white text-sm" dir="ltr">Command R7B Arabic</div>
+                            <span class="text-xs font-mono text-teal-300">128K ctx</span>
+                        </div>
+                        <div class="flex flex-wrap items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-800/80">
+                            <span>Cohere (20 RPM, 1K/mo)</span>
+                            <span class="font-mono text-teal-300">+ Groq allam-2-7b</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search & Advanced Filters Bar -->
+            <div class="glass-card p-4 rounded-2xl space-y-4">
+                <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+                    <!-- Search Input -->
+                    <div class="relative flex-1">
+                        <i class="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input
+                            type="text"
+                            id="v4ModelSearch"
+                            oninput="renderV4Models()"
+                            placeholder="ابحث بالاسم أو المعرّف أو المزود (مثال: glm-5.3, deepseek-v4, gemini-3.8, nemotron, qwen, arabic, allam, whisper)..."
+                            class="w-full bg-slate-950/90 border border-slate-800 focus:border-emerald-500 rounded-xl pr-11 pl-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition-colors"
+                        >
+                    </div>
+
+                    <!-- Provider Select, Sort Select, Checkboxes & View Switch -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        <select id="v4ProviderFilter" onchange="renderV4Models()" class="bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-200 outline-none">
+                            <option value="all">جميع المزودين (22 مزوداً)</option>
+                        </select>
+
+                        <select id="v4SortSelect" onchange="renderV4Models()" class="bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3 py-2.5 text-xs font-bold text-emerald-400 outline-none">
+                            <option value="score">الترتيب: النقاط (Score ↓)</option>
+                            <option value="context">الترتيب: حجم السياق (Context ↓)</option>
+                            <option value="released">الترتيب: الأحدث إصداراً (Released ↓)</option>
+                            <option value="weekly">الترتيب: الاستهلاك الأسبوعي (Weekly ↓)</option>
+                            <option value="aaindex">الترتيب: مؤشر الذكاء (AA Index ↓)</option>
+                        </select>
+
+                        <label class="inline-flex items-center gap-1.5 bg-slate-950 border border-slate-800 px-3 py-2 rounded-xl text-xs font-bold text-slate-300 cursor-pointer hover:border-emerald-500/40">
+                            <input type="checkbox" id="v4VerifiedOnly" onchange="renderV4Models()" class="accent-emerald-500 rounded">
+                            <i class="fa-solid fa-circle-check text-emerald-400 text-[11px]"></i>
+                            <span>الموثق فقط (verified)</span>
+                        </label>
+
+                        <label class="inline-flex items-center gap-1.5 bg-slate-950 border border-slate-800 px-3 py-2 rounded-xl text-xs font-bold text-slate-300 cursor-pointer hover:border-cyan-500/40">
+                            <input type="checkbox" id="v4MillionOnly" onchange="renderV4Models()" class="accent-cyan-500 rounded">
+                            <span class="font-mono text-cyan-400">1.0M</span>
+                            <span>سياق مليون</span>
+                        </label>
+
+                        <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800">
+                            <button onclick="setV4ModelView('grid')" id="v4view-grid" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-emerald-400 flex items-center gap-1.5">
+                                <i class="fa-solid fa-grip"></i>
+                                <span>بطاقات</span>
+                            </button>
+                            <button onclick="setV4ModelView('table')" id="v4view-table" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white flex items-center gap-1.5">
+                                <i class="fa-solid fa-table"></i>
+                                <span>جدول</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modalities Filter Pills -->
+                <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-800/80">
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <span class="text-xs text-slate-400 font-bold ml-1">الوسائط (Modalities):</span>
+                        <button onclick="setModalityFilter('all')" id="mod-all" class="mod-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 text-slate-950 transition-all">
+                            الكل (<span id="mod-count-all">0</span>)
+                        </button>
+                        <button onclick="setModalityFilter('reasoning')" id="mod-reasoning" class="mod-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700 transition-all">
+                            <i class="fa-solid fa-brain ml-1 text-purple-400"></i>التفكير المنطقي (<span id="mod-count-reasoning">0</span>)
+                        </button>
+                        <button onclick="setModalityFilter('image')" id="mod-image" class="mod-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700 transition-all">
+                            <i class="fa-solid fa-image ml-1 text-cyan-400"></i>الصور والرؤية (<span id="mod-count-image">0</span>)
+                        </button>
+                        <button onclick="setModalityFilter('video')" id="mod-video" class="mod-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700 transition-all">
+                            <i class="fa-solid fa-video ml-1 text-rose-400"></i>الفيديو (<span id="mod-count-video">0</span>)
+                        </button>
+                        <button onclick="setModalityFilter('audio')" id="mod-audio" class="mod-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700 transition-all">
+                            <i class="fa-solid fa-volume-high ml-1 text-amber-400"></i>الصوت (<span id="mod-count-audio">0</span>)
+                        </button>
+                        <button onclick="setModalityFilter('pdf')" id="mod-pdf" class="mod-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700 transition-all">
+                            <i class="fa-solid fa-file-pdf ml-1 text-emerald-400"></i>مستندات PDF (<span id="mod-count-pdf">0</span>)
+                        </button>
+                    </div>
+                    <div class="text-xs text-slate-400 font-mono">
+                        المعروض حالياً: <strong id="v4ShowingCount" class="text-emerald-400">0</strong> نموذج
+                    </div>
+                </div>
+            </div>
+
+            <!-- Models Grid Container -->
+            <div id="v4ModelsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+            <!-- Models Table Container -->
+            <div id="v4ModelsTableWrap" class="hidden glass-card rounded-2xl overflow-hidden border border-slate-800">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right text-xs sm:text-sm">
+                        <thead class="bg-slate-900/95 text-slate-300 border-b border-slate-800 text-xs">
+                            <tr>
+                                <th class="py-3.5 px-3">#</th>
+                                <th class="py-3.5 px-4">النموذج (Name &amp; ID)</th>
+                                <th class="py-3.5 px-3">المزود</th>
+                                <th class="py-3.5 px-3">النقاط / المقاييس</th>
+                                <th class="py-3.5 px-3">السياق</th>
+                                <th class="py-3.5 px-3">الوسائط</th>
+                                <th class="py-3.5 px-3">حد الاستخدام</th>
+                                <th class="py-3.5 px-3">الإصدار / الأسبوعي</th>
+                                <th class="py-3.5 px-3 text-center">إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="v4ModelsTableBody" class="divide-y divide-slate-800/70"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================
+             TAB 2: 22 PROVIDERS DIRECTORY & AUDITED COMPARISON
+             ================================================================= -->
+        <section id="tab-directory" class="hidden space-y-6">
+
+            <!-- Audit Notices: GitHub Models Shutdown & OpenRouter Discrepancy -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div class="rounded-2xl bg-amber-950/30 border border-amber-500/40 p-4 flex items-start gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0 mt-0.5">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h3 class="text-sm font-bold text-amber-300">إشعار رسمي: إغلاق GitHub Models نهائياً</h3>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-amber-500/20 text-amber-300">RETIRED: 2026-07-30</span>
+                        </div>
+                        <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+                            أُغلقت منصة <strong>GitHub Models</strong> وواجهة <code class="code-font text-amber-300" dir="ltr">models.inference.ai.azure.com</code> نهائياً في 30 يوليو 2026، ولذلك اُستبعدت من المزودين النشطين.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="rounded-2xl bg-cyan-950/30 border border-cyan-500/40 p-4 flex items-start gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shrink-0 mt-0.5">
+                        <i class="fa-solid fa-scale-balanced"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h3 class="text-sm font-bold text-cyan-300">ملاحظة تدقيق حول حدود OpenRouter</h3>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-500/20 text-cyan-300">DISCREPANCY NOTE</span>
+                        </div>
+                        <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+                            التوثيق الرسمي لـ OpenRouter ينص على <strong>50 RPD</strong> (أقل من 10 credits) و<strong>1,000 RPD</strong> (بعد شراء 10 credits) مع <strong>20 RPM</strong>، بينما يظهر في بطاقات <code class="code-font text-cyan-300">freellm.net</code> رقم <code class="code-font text-cyan-300">200 req/day</code>. يعرض التطبيق كلا الرقمين للأمانة العلمية.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Providers Search & Filter Controls -->
+            <div class="glass-card p-4 rounded-2xl flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+                <div class="relative flex-1">
+                    <i class="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input
+                        type="text"
+                        id="providerSearch"
+                        oninput="renderProvidersDirectory()"
+                        placeholder="ابحث في المزودين (مثال: NVIDIA NIM, Ollama Cloud, Gonka, OpenCode, LLM7, Groq, Cerebras, Together)..."
+                        class="w-full bg-slate-950/90 border border-slate-800 focus:border-emerald-500 rounded-xl pr-11 pl-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none"
+                    >
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="setProviderFilter('freellm22')" id="pfilt-freellm22" class="pfilt-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 text-slate-950 transition-all">
+                        مزودو FreeLLM.net (22)
+                    </button>
+                    <button onclick="setProviderFilter('all')" id="pfilt-all" class="pfilt-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700 transition-all">
+                        شاملاً مزودي FreeLLM والمدققين (26)
+                    </button>
+                    <button onclick="setProviderFilter('nocard')" id="pfilt-nocard" class="pfilt-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700 transition-all">
+                        <i class="fa-solid fa-credit-card ml-1 text-emerald-400"></i>بدون بطاقة بنكية
+                    </button>
+                    <button onclick="setProviderFilter('cors')" id="pfilt-cors" class="pfilt-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700 transition-all">
+                        <i class="fa-solid fa-globe ml-1 text-cyan-400"></i>يدعم متصفح CORS
+                    </button>
+                </div>
+            </div>
+
+            <!-- Providers Grid -->
+            <div id="providersGrid" class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>
+        </section>
+
+        <!-- =================================================================
+             TAB 3: MULTI-LANGUAGE CODE GENERATOR & FAILOVER ROUTER
+             ================================================================= -->
+        <section id="tab-codegen" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Left Config Sidebar (4 cols) -->
+                <div class="lg:col-span-4 glass-card rounded-2xl p-5 space-y-4 h-fit">
+                    <div class="border-b border-slate-800 pb-3">
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-sliders text-emerald-400"></i>
+                            <span>إعدادات مولد الكود (v4.0)</span>
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-1">يدعم البث الحي SSE وتحصين علامات اقتباس POSIX</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1.5">نمط الربط البرمجي:</label>
+                        <select id="cgPatternMode" onchange="updateGeneratedCode()" class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-xs font-bold text-emerald-400 outline-none">
+                            <option value="single">اتصال مباشر بمزود ونموذج محدد (Single Provider)</option>
+                            <option value="failover_v4">موجه التبديل التلقائي الخماسي عند 429 (NVIDIA NIM → OpenCode → OpenRouter → Groq → LLM7)</option>
+                        </select>
+                    </div>
+
+                    <div id="cgSingleProviderGroup" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1.5">1. اختر المزود:</label>
+                            <select id="cgProvider" onchange="onCodegenProviderChange()" class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none"></select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1.5">2. اختر النموذج (Model ID):</label>
+                            <select id="cgModel" onchange="updateGeneratedCode()" class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-xs text-emerald-400 code-font outline-none" dir="ltr"></select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1.5">3. رسالة النظام (System Prompt):</label>
+                        <input
+                            type="text"
+                            id="cgSystemPrompt"
+                            oninput="updateGeneratedCode()"
+                            value="أنت مهندس برمجيات خبير يجيب باللغة العربية بدقة واختصار."
+                            class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3.5 py-2 text-xs text-white outline-none"
+                        >
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1.5">4. رسالة المستخدم (User Prompt):</label>
+                        <textarea
+                            id="cgUserPrompt"
+                            rows="3"
+                            oninput="updateGeneratedCode()"
+                            class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-3 text-xs text-white outline-none resize-none"
+                        >اكتب دالة بلغة Go لحساب متتالية فيبوناتشي، ووضح الفرق بين 'recursion' و "iteration".</textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                        <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-slate-400">الحرارة (Temp)</span>
+                                <span id="cgTempVal" class="font-mono text-emerald-400 font-bold">0.7</span>
+                            </div>
+                            <input type="range" id="cgTemp" min="0" max="1.5" step="0.1" value="0.7" oninput="document.getElementById('cgTempVal').textContent = this.value; updateGeneratedCode();" class="w-full accent-emerald-500">
+                        </div>
+
+                        <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 flex flex-col justify-between">
+                            <span class="text-xs text-slate-400">البث الحي (Stream):</span>
+                            <label class="inline-flex items-center gap-2 cursor-pointer mt-1">
+                                <input type="checkbox" id="enableStream" onchange="updateGeneratedCode()" class="sr-only peer">
+                                <div class="w-9 h-5 bg-slate-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all relative peer-checked:bg-emerald-500"></div>
+                                <span id="cgStreamLabel" class="text-[11px] font-mono text-slate-300">stream: false</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="cgProviderInfo" class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800/80 text-xs space-y-1.5"></div>
+                </div>
+
+                <!-- Right Code Viewer (8 cols) -->
+                <div class="lg:col-span-8 flex flex-col glass-card rounded-2xl overflow-hidden border border-slate-800">
+                    <div class="bg-slate-900/95 border-b border-slate-800 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex flex-wrap items-center gap-1.5">
+                            <button onclick="setCodeLanguage('go')" id="lang-go" class="lang-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-500 text-slate-950 flex items-center gap-2 transition-all">
+                                <i class="fa-brands fa-golang text-base"></i>
+                                <span>Go (Golang)</span>
+                            </button>
+                            <button onclick="setCodeLanguage('python')" id="lang-python" class="lang-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-950 text-slate-300 border border-slate-800 hover:border-slate-700 flex items-center gap-2 transition-all">
+                                <i class="fa-brands fa-python text-sm text-amber-400"></i>
+                                <span>Python</span>
+                            </button>
+                            <button onclick="setCodeLanguage('node')" id="lang-node" class="lang-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-950 text-slate-300 border border-slate-800 hover:border-slate-700 flex items-center gap-2 transition-all">
+                                <i class="fa-brands fa-node-js text-sm text-green-400"></i>
+                                <span>Node.js (ESM)</span>
+                            </button>
+                            <button onclick="setCodeLanguage('curl')" id="lang-curl" class="lang-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-950 text-slate-300 border border-slate-800 hover:border-slate-700 flex items-center gap-2 transition-all">
+                                <i class="fa-solid fa-terminal text-xs text-cyan-400"></i>
+                                <span>cURL (POSIX Safe)</span>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <button onclick="openFallbackCode()" class="px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-bold flex items-center gap-1.5 transition-all">
+                                <i class="fa-solid fa-code-branch"></i>
+                                <span>كود موجه التبديل التلقائي (429 Failover)</span>
+                            </button>
+                            <button onclick="copyGeneratedCode()" class="px-3.5 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 text-xs font-bold flex items-center gap-1.5 transition-all">
+                                <i class="fa-regular fa-copy"></i>
+                                <span>نسخ الكود</span>
+                            </button>
+                            <button onclick="downloadGeneratedCode()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1.5 transition-all" title="تنزيل الملف">
+                                <i class="fa-solid fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950/90 border-b border-slate-800/80 px-4 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs" dir="ltr">
+                        <div class="flex items-center gap-2 overflow-x-auto">
+                            <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono font-bold">POST</span>
+                            <span id="cgEndpointUrl" class="font-mono text-slate-300 select-all">https://integrate.api.nvidia.com/v1/chat/completions</span>
+                        </div>
+                        <button onclick="copyToClipboard(document.getElementById('cgEndpointUrl').textContent, 'تم نسخ رابط نقطة النهاية')" class="text-slate-400 hover:text-emerald-400 font-sans text-xs flex items-center gap-1">
+                            <i class="fa-regular fa-clone"></i>
+                            <span>نسخ الرابط</span>
+                        </button>
+                    </div>
+
+                    <div class="relative flex-1 bg-slate-950 p-5 overflow-x-auto" dir="ltr">
+                        <pre class="code-font text-xs sm:text-sm leading-relaxed text-slate-200 select-all"><code id="generatedCodeBlock"></code></pre>
+                    </div>
+
+                    <div class="bg-slate-900/90 border-t border-slate-800 px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-slate-400">
+                        <div id="cgInstallHint" class="font-mono text-[11px] text-slate-300" dir="ltr"></div>
+                        <a id="cgGetKeyLink" href="https://freellm.net" target="_blank" rel="noopener noreferrer" class="text-emerald-400 hover:underline font-bold flex items-center gap-1">
+                            <span>صفحة المزود على FreeLLM.net</span>
+                            <i class="fa-solid fa-arrow-up-left-from-square text-[10px]"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================
+             TAB 4: LIVE API KEY TESTER & 429 SIMULATOR
+             ================================================================= -->
+        <section id="tab-playground" class="hidden space-y-6">
+            <div class="glass-card p-3 rounded-2xl flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-slate-950 p-1.5 rounded-xl border border-slate-800">
+                    <button onclick="setPlaygroundMode('failover_sim')" id="pgmode-failover_sim" class="px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-emerald-500 text-slate-950 shadow flex items-center justify-center gap-2 transition-all">
+                        <i class="fa-solid fa-rotate"></i>
+                        <span>1. محاكي التبديل والأخطاء (بدون مفتاح API — 429 Simulator)</span>
+                    </button>
+                    <button onclick="setPlaygroundMode('live')" id="pgmode-live" class="px-4 py-2 rounded-lg text-xs sm:text-sm font-bold text-slate-300 hover:text-white flex items-center justify-center gap-2 transition-all">
+                        <i class="fa-solid fa-key"></i>
+                        <span>2. اختبار حقيقي بمفتاح المستخدم (Bring Your Own Key)</span>
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-2 text-xs text-slate-400 px-2">
+                    <i class="fa-solid fa-shield-halved text-emerald-400"></i>
+                    <span>فحص HTTPS إلزامي، تحقق 32-hex لـ Cloudflare، مهلة 45 ثانية، وبناء DOM آمن ضد XSS.</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Left Config (5 cols) -->
+                <div class="lg:col-span-5 glass-card rounded-2xl p-5 space-y-4 h-fit">
+                    <!-- Simulator Mode Panel -->
+                    <div id="failoverConfigPanel" class="space-y-3.5">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <div>
+                                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                                    <i class="fa-solid fa-rotate text-emerald-400"></i>
+                                    <span>محاكي التبديل التلقائي وأخطاء 429</span>
+                                </h3>
+                                <p class="text-xs text-slate-400 mt-0.5">يحاكي استنفاد الحد وقراءة ترويسات `x-ratelimit-*` والانتقال للمزود الاحتياطي</p>
+                            </div>
+                            <span class="px-2 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-mono text-[10px]">NO KEY NEEDED</span>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1.5">اختر سيناريو المحاكاة:</label>
+                            <select id="simScenarioSelect" class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3 py-2.5 text-xs text-white outline-none">
+                                <option value="v4_failover">إرجاع 429 من NVIDIA NIM (glm-5.3-flash) ثم النجاح عبر OpenCode Zen</option>
+                                <option value="double_failover">إرجاع 429 من Groq (30 RPM) وOpenRouter (50 RPD) ثم النجاح عبر Cohere</option>
+                                <option value="raw_429_inspect">معاينة هيكل HTTP 429 وترويسات Groq (RPD مقابل TPM) فقط</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Live BYOK Mode Panel -->
+                    <div id="liveConfigPanel" class="hidden space-y-3.5">
+                        <div class="border-b border-slate-800 pb-3">
+                            <h3 class="text-base font-bold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-satellite-dish text-emerald-400"></i>
+                                <span>اختبار حقيقي بمفتاحك (Live Fetch)</span>
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-0.5">يرسل طلباً حقيقياً من المتصفح ويقرأ `response.text()` وترويسات `x-ratelimit-*`</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1">المزود:</label>
+                            <select id="liveProviderSelect" onchange="onLiveProviderChange()" class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3 py-2 text-xs text-white outline-none"></select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1">رابط نقطة النهاية (HTTPS فقط):</label>
+                            <input
+                                type="text"
+                                id="liveEndpointInput"
+                                dir="ltr"
+                                value="https://api.groq.com/openai/v1/chat/completions"
+                                class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3 py-2 text-xs text-cyan-400 code-font outline-none"
+                            >
+                        </div>
+
+                        <div id="liveAccountIdGroup" class="hidden">
+                            <label class="block text-xs font-bold text-amber-300 mb-1">معرّف حساب Cloudflare (Account ID — 32 Hex):</label>
+                            <input
+                                type="text"
+                                id="liveAccountIdInput"
+                                dir="ltr"
+                                placeholder="0123456789abcdef0123456789abcdef"
+                                class="w-full bg-slate-950 border border-amber-500/40 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white code-font outline-none"
+                            >
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1">مفتاح الـ API الخاص بك:</label>
+                            <div class="relative">
+                                <input
+                                    type="password"
+                                    id="liveApiKeyInput"
+                                    dir="ltr"
+                                    autocomplete="off"
+                                    placeholder="gsk_... / nvapi-... / sk-or-v1-..."
+                                    class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl pl-3 pr-9 py-2 text-xs text-white code-font outline-none"
+                                >
+                                <button type="button" onclick="toggleApiKeyVisibility()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs">
+                                    <i id="apiKeyEyeIcon" class="fa-regular fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1">النموذج (Model ID):</label>
+                            <select id="liveModelSelect" class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3 py-2 text-xs text-emerald-400 code-font outline-none" dir="ltr"></select>
+                        </div>
+                    </div>
+
+                    <!-- Shared Prompt Inputs -->
+                    <div class="space-y-3 pt-2 border-t border-slate-800/80">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1">رسالة النظام (System):</label>
+                            <input
+                                type="text"
+                                id="pgSystemPrompt"
+                                value="أنت مهندس برمجيات خبير. قدم إجابات دقيقة مع أمثلة برمجية واضحة باللغة العربية."
+                                class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                            >
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1">رسالة المستخدم (User):</label>
+                            <textarea
+                                id="pgUserPrompt"
+                                rows="3"
+                                class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-3 text-xs text-white outline-none resize-y"
+                            >اكتب برنامجاً صغيراً بلغة Go يرسل طلبات HTTP متزامنة باستخدام Goroutines و WaitGroup.</textarea>
+                        </div>
+
+                        <div class="flex items-center justify-between bg-slate-950 px-3.5 py-2 rounded-xl border border-slate-800">
+                            <span class="text-xs text-slate-400">درجة العشوائية (Temperature):</span>
+                            <div class="flex items-center gap-3">
+                                <input type="range" id="pgTemp" min="0" max="1.2" step="0.1" value="0.5" oninput="document.getElementById('pgTempBadge').textContent = this.value" class="w-24 accent-emerald-500">
+                                <span id="pgTempBadge" class="font-mono text-xs font-bold text-emerald-400 w-6">0.5</span>
+                            </div>
+                        </div>
+
+                        <button
+                            id="pgRunBtn"
+                            onclick="executePlaygroundRequest()"
+                            class="w-full py-3 rounded-xl bg-gradient-to-l from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-extrabold text-sm shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all"
+                        >
+                            <i class="fa-solid fa-play"></i>
+                            <span id="pgRunBtnLabel">تشغيل محاكي التبديل التلقائي واختبار 429</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Output (7 cols) -->
+                <div class="lg:col-span-7 flex flex-col glass-card rounded-2xl overflow-hidden border border-slate-800 min-h-[520px]">
+                    <div class="bg-slate-900/95 border-b border-slate-800 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex flex-wrap items-center gap-3">
+                            <div class="flex items-center gap-1.5 text-xs">
+                                <span class="text-slate-400">الحالة:</span>
+                                <span id="pgStatusBadge" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono text-xs">جاهز</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 text-xs">
+                                <i class="fa-regular fa-clock text-cyan-400"></i>
+                                <span class="text-slate-400">الزمن:</span>
+                                <span id="pgLatencyBadge" class="font-mono font-bold text-cyan-400">-- ms</span>
+                            </div>
+                            <div class="flex items-center gap-1.5 text-xs">
+                                <i class="fa-solid fa-coins text-amber-400"></i>
+                                <span class="text-slate-400">التوكن:</span>
+                                <span id="pgTokensBadge" class="font-mono font-bold text-amber-400">--</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                            <button onclick="setResponseView('formatted')" id="resp-formatted-btn" class="px-3 py-1 rounded-lg text-xs font-bold bg-emerald-500 text-slate-950">
+                                المخرجات والترويسات
+                            </button>
+                            <button onclick="setResponseView('raw')" id="resp-raw-btn" class="px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white font-mono">
+                                Raw JSON Body
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="pgHeadersBar" class="bg-slate-950/90 border-b border-slate-800/80 px-4 py-2 text-[11px] font-mono text-slate-400 flex flex-wrap items-center gap-4" dir="ltr">
+                        <span>x-ratelimit-remaining-requests: <strong id="hdrRemReq" class="text-emerald-400">N/A</strong></span>
+                        <span>x-ratelimit-remaining-tokens: <strong id="hdrRemTok" class="text-cyan-400">N/A</strong></span>
+                        <span>retry-after: <strong id="hdrRetryAfter" class="text-amber-400">N/A</strong></span>
+                    </div>
+
+                    <div class="relative flex-1 p-5 overflow-y-auto bg-slate-950/60">
+                        <div id="pgLoading" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-sm z-10 flex flex-col items-center justify-center gap-3">
+                            <div class="w-12 h-12 rounded-2xl border-2 border-emerald-500 border-t-transparent animate-spin"></div>
+                            <div class="text-sm font-bold text-emerald-400">جاري الاتصال وقراءة الاستجابة الخام...</div>
+                        </div>
+
+                        <div id="pgFormattedOutput" class="space-y-4 text-sm leading-relaxed text-slate-200"></div>
+
+                        <div id="pgRawOutputContainer" class="hidden" dir="ltr">
+                            <pre class="code-font text-xs text-emerald-300 bg-slate-950 p-4 rounded-xl border border-slate-800 overflow-x-auto"><code id="pgRawJsonCode">// Raw HTTP response body will appear here...</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/90 border-t border-slate-800 px-4 py-2.5 flex items-center justify-between text-xs">
+                        <span class="text-slate-400">محمي ضد XSS عبر <code class="code-font text-emerald-400">textContent</code></span>
+                        <button onclick="copyPlaygroundResponse()" class="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1.5">
+                            <i class="fa-regular fa-copy"></i>
+                            <span>نسخ المخرجات</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================
+             TAB 5: ARABIC TOKEN CALCULATOR, AUDIT REGISTRY & JSON EXPORTER
+             ================================================================= -->
+        <section id="tab-calculator" class="hidden space-y-8">
+            <!-- Part A: Arabic Token Calculator & 22-Provider Rate Limit Simulator -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div class="lg:col-span-5 glass-card rounded-2xl p-5 space-y-5 h-fit">
+                    <div class="border-b border-slate-800 pb-3">
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-calculator text-emerald-400"></i>
+                            <span>حاسبة التوكن العربي ومحاكي حدود الـ 22 مزوداً</span>
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-1">حساب تقديري للتوكنات العربية والإنجليزية والأكواد ومقارنة استهلاكك بالدقيقة واليوم والشهر</p>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-xs font-bold text-slate-300">نص الـ Prompt:</label>
+                            <button onclick="loadSampleCalcText()" class="text-xs text-emerald-400 hover:underline">إدراج نص برمجي</button>
+                        </div>
+                        <textarea
+                            id="calcInputText"
+                            rows="4"
+                            oninput="calculateTokensAndLimits()"
+                            class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-3 text-sm text-white outline-none"
+                        >أنت مساعد ذكي متخصص في تحليل البيانات المالية. قم باستخراج أهم المؤشرات من التقرير التالي وأعد النتيجة بصيغة JSON مهيكل يتضمن الإيرادات وصافي الربح ونسبة النمو السنوي.</textarea>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                        <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-center">
+                            <div class="text-[11px] text-slate-400">توكن الإدخال</div>
+                            <div id="statTotalTokens" class="text-lg font-extrabold font-mono text-emerald-400 mt-0.5">0</div>
+                        </div>
+                        <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-center">
+                            <div class="text-[11px] text-slate-400">أحرف عربية</div>
+                            <div id="statArabicChars" class="text-lg font-extrabold font-mono text-cyan-400 mt-0.5">0</div>
+                        </div>
+                        <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-center">
+                            <div class="text-[11px] text-slate-400">أحرف لاتينية</div>
+                            <div id="statLatinChars" class="text-lg font-extrabold font-mono text-purple-400 mt-0.5">0</div>
+                        </div>
+                        <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-center">
+                            <div class="text-[11px] text-slate-400">الكلمات</div>
+                            <div id="statWordCount" class="text-lg font-extrabold font-mono text-white mt-0.5">0</div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3.5 pt-2 border-t border-slate-800">
+                        <div class="bg-slate-950/90 p-3 rounded-xl border border-slate-800 flex items-center justify-between gap-2">
+                            <div>
+                                <div class="text-xs font-bold text-white">حساب OpenRouter (&gt;=10 Credits):</div>
+                                <div class="text-[11px] text-slate-400">يرفع الحد الرسمي من 50 إلى 1,000 طلب/يوم</div>
+                            </div>
+                            <label class="inline-flex items-center gap-2 cursor-pointer shrink-0">
+                                <input type="checkbox" id="simOpenRouterPaid" onchange="calculateTokensAndLimits()" class="sr-only peer">
+                                <div class="w-9 h-5 bg-slate-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all relative peer-checked:bg-emerald-500"></div>
+                            </label>
+                        </div>
+
+                        <div class="bg-slate-950/90 p-3 rounded-xl border border-slate-800">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-slate-300">متوسط توكنات المخرجات (Output Tokens):</span>
+                                <span id="simOutputTokensVal" class="font-mono font-bold text-emerald-400">250 توكن</span>
+                            </div>
+                            <input type="range" id="simOutputTokens" min="50" max="4000" step="50" value="250" oninput="calculateTokensAndLimits()" class="w-full accent-emerald-500">
+                        </div>
+
+                        <div class="bg-slate-950/90 p-3 rounded-xl border border-slate-800">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-slate-300">الطلبات في الدقيقة (RPM):</span>
+                                <span id="simRpmVal" class="font-mono font-bold text-cyan-400">4 طلب/دقيقة</span>
+                            </div>
+                            <input type="range" id="simRpm" min="1" max="60" step="1" value="4" oninput="calculateTokensAndLimits()" class="w-full accent-cyan-500">
+                        </div>
+
+                        <div class="bg-slate-950/90 p-3 rounded-xl border border-slate-800">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-slate-300">الطلبات في اليوم (RPD):</span>
+                                <span id="simRpdVal" class="font-mono font-bold text-amber-400">30 طلب/يوم</span>
+                            </div>
+                            <input type="range" id="simRpd" min="5" max="2000" step="5" value="30" oninput="calculateTokensAndLimits()" class="w-full accent-amber-500">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-7 glass-card rounded-2xl p-5 flex flex-col justify-between space-y-4">
+                    <div>
+                        <div class="border-b border-slate-800 pb-3 flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                                    <i class="fa-solid fa-check-double text-cyan-400"></i>
+                                    <span>مصفوفة التوافق (جميع المزودين)</span>
+                                </h3>
+                                <p class="text-xs text-slate-400 mt-0.5">فحص فوري لمدى توافق معدل طلباتك مع كل مزود</p>
+                            </div>
+                            <div class="flex items-center gap-3 text-left">
+                                <div>
+                                    <div class="text-[10px] text-slate-400">بالدقيقة (TPM)</div>
+                                    <div id="simCalculatedTpm" class="font-mono text-xs font-extrabold text-emerald-400">0 TPM</div>
+                                </div>
+                                <div>
+                                    <div class="text-[10px] text-slate-400">باليوم (TPD)</div>
+                                    <div id="simCalculatedTpd" class="font-mono text-xs font-extrabold text-amber-400">0 TPD</div>
+                                </div>
+                                <div>
+                                    <div class="text-[10px] text-slate-400">بالشهر</div>
+                                    <div id="simCalculatedMonthly" class="font-mono text-xs font-extrabold text-cyan-400">0 طلب/شهر</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="limitMatrixContainer" class="space-y-2.5 mt-4 max-h-[520px] overflow-y-auto pl-1"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Part B: Retired Models Table & Full JSON/TS Exporter -->
+            <div class="glass-card rounded-2xl p-6 space-y-6">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                    <div>
+                        <h3 class="text-xl font-extrabold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-database text-emerald-400"></i>
+                            <span>سجل التدقيق والنماذج المتوقفة وتصدير JSON الكامل (v4.0 Exporter)</span>
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-1">
+                            يضم جدول المنصات والنماذج المتوقفة (GitHub Models وGroq وGemini 2.0) بالإضافة إلى تصدير JSON الكامل لبيانات <code class="code-font text-emerald-400">freellm.net</code>.
+                        </p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="downloadV4Json()" class="px-3.5 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold text-xs flex items-center gap-1.5 hover:bg-cyan-400 transition-all">
+                            <i class="fa-solid fa-download"></i>
+                            <span>تنزيل freellm-v4-audited.json</span>
+                        </button>
+                        <button onclick="copyRegistryJson()" class="px-3.5 py-2 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs flex items-center gap-1.5 hover:bg-emerald-400 transition-all">
+                            <i class="fa-regular fa-copy"></i>
+                            <span>نسخ JSON الكامل</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Retired Models & Platforms Table -->
+                <div class="space-y-2">
+                    <h4 class="text-sm font-bold text-amber-300 flex items-center gap-2">
+                        <i class="fa-solid fa-ban"></i>
+                        <span>جدول المنصات والنماذج المتوقفة (Retired Platforms &amp; Models) وبدائلها النشطة</span>
+                    </h4>
+                    <div class="overflow-x-auto rounded-xl border border-slate-800">
+                        <table class="w-full text-right text-xs">
+                            <thead class="bg-slate-900/95 text-slate-300 border-b border-slate-800">
+                                <tr>
+                                    <th class="py-3 px-4">الجهة / المزود</th>
+                                    <th class="py-3 px-4">المنصة أو النموذج المتوقف</th>
+                                    <th class="py-3 px-4">تاريخ الإيقاف / الحالة</th>
+                                    <th class="py-3 px-4">البديل النشط الموصى به في v4.0</th>
+                                    <th class="py-3 px-4">المصدر الرسمي</th>
+                                </tr>
+                            </thead>
+                            <tbody id="retiredModelsTableBody" class="divide-y divide-slate-800/70 bg-slate-950/50"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Raw JSON Viewer -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <h4 class="text-sm font-bold text-slate-300">الكائن الكامل للبيانات (<code class="code-font text-emerald-400">schema_version: 4.0.0-audited-freellm-freellm</code>):</h4>
+                        <span class="text-xs font-mono text-slate-400" dir="ltr">extractedAt: 2026-11-02T14:52:36.082Z</span>
+                    </div>
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 overflow-x-auto max-h-96" dir="ltr">
+                        <pre class="code-font text-xs text-cyan-300"><code id="auditRegistryJsonBlock"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 bg-slate-950 py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span>بوابة واجهات LLM المجانية — النسخة الرابعة الموحدة والمدققة (v4.0 Audited — 2026-11-02)</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <span>22 مزوداً متصلاً</span>
+                <span>•</span>
+                <span>296 نموذجاً مجانياً</span>
+                <span>•</span>
+                <span>حماية XSS &amp; POSIX</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- =================================================================
+         JAVASCRIPT ENGINE & EMBEDDED v4.0 UNIFIED DATASET
+         ================================================================= -->
+    <script>
+        "use strict";
+
+        const EXTRACTED_AT = "2026-11-02T14:52:36.082Z";
+        const VERIFIED_AT = "2026-11-02";
+
+        const STATS_V4 = {
+            totalTracked: 535,
+            freeAndOnline: 296,
+            providersCount: 22,
+            noCreditCard: 454
+        };
+
+        // Security & String Helpers
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function escapePosixSingleQuote(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/'/g, "'\\''");
+        }
+
+        function fmt(n) {
+            return Number(n || 0).toLocaleString('en-US');
+        }
+
+        function parseContextString(ctxStr) {
+            if (!ctxStr || ctxStr === '0' || ctxStr === 'N/A') return 0;
+            const s = String(ctxStr).trim().toUpperCase();
+            if (s.endsWith('M')) return parseFloat(s) * 1000000;
+            if (s.endsWith('K')) return parseFloat(s) * 1000;
+            return parseFloat(s) || 0;
+        }
+
+        function parseWeeklyTokens(wkStr) {
+            if (!wkStr || wkStr === '—' || wkStr === '-') return 0;
+            const s = String(wkStr).trim().toUpperCase();
+            if (s.endsWith('T')) return parseFloat(s) * 1e12;
+            if (s.endsWith('B')) return parseFloat(s) * 1e9;
+            if (s.endsWith('M')) return parseFloat(s) * 1e6;
+            if (s.endsWith('K')) return parseFloat(s) * 1e3;
+            return parseFloat(s) || 0;
+        }
+
+        function parseReleaseDate(dateStr) {
+            if (!dateStr) return 0;
+            const t = Date.parse(dateStr);
+            return Number.isNaN(t) ? 0 : t;
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const toast = document.createElement('div');
+            const isError = type === 'error';
+            toast.className = `pointer-events-auto flex items-center justify-between gap-3 px-4 py-3 rounded-xl shadow-xl border text-xs font-bold transition-all ${
+                isError
+                    ? 'bg-rose-950/95 border-rose-500/50 text-rose-200'
+                    : 'bg-slate-900/95 border-emerald-500/50 text-emerald-300'
+            }`;
+            const leftDiv = document.createElement('div');
+            leftDiv.className = 'flex items-center gap-2';
+            const icon = document.createElement('i');
+            icon.className = isError ? 'fa-solid fa-circle-exclamation text-rose-400 text-sm' : 'fa-solid fa-circle-check text-emerald-400 text-sm';
+            const textSpan = document.createElement('span');
+            textSpan.textContent = message;
+            leftDiv.appendChild(icon);
+            leftDiv.appendChild(textSpan);
+            toast.appendChild(leftDiv);
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        }
+
+        async function copyToClipboard(text, successMsg = 'تم النسخ إلى الحافظة بنجاح') {
+            if (!text) {
+                showToast('لا يوجد نص لنسخه', 'error');
+                return false;
+            }
+            if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+                try {
+                    await navigator.clipboard.writeText(text);
+                    showToast(successMsg, 'success');
+                    return true;
+                } catch (_) {}
+            }
+            try {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.setAttribute('readonly', '');
+                ta.style.position = 'fixed';
+                ta.style.top = '-9999px';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.focus();
+                ta.select();
+                const copied = document.execCommand('copy');
+                document.body.removeChild(ta);
+                if (copied === true) {
+                    showToast(successMsg, 'success');
+                    return true;
+                }
+            } catch (_) {}
+            showToast('تعذر النسخ التلقائي؛ يرجى النسخ يدوياً (Ctrl+C)', 'error');
+            return false;
+        }
+
+        // 22 FREELLM.NET PROVIDERS + 4 EXTENDED PROVIDERS
+        const PROVIDERS_V4 = [
+            { id: "nvidia-nim", name: "NVIDIA NIM", url: "https://freellm.net/providers/nvidia-nim", baseUrl: "https://integrate.api.nvidia.com/v1", envKeyName: "NVIDIA_API_KEY", noCreditCard: true, browserCors: false, inFreeLlm22: true, billingModel: "fixed_quota", rpm: 40, rpd: 1000, tpm: 40000, limitsText: "Up to 40 RPM (Free NIM Developer Credits)", limitsNote: "يستضيف أكبر مجموعة من النماذج الموثقة مجاناً، وعلى رأسها z-ai/glm-5.3-flash (Score 93) وdeepseek-v4.1-flash (Score 89)." },
+            { id: "ollama-cloud", name: "Ollama Cloud", url: "https://freellm.net/providers/ollama-cloud", baseUrl: "https://ollama.com/v1", envKeyName: "OLLAMA_API_KEY", noCreditCard: true, browserCors: true, inFreeLlm22: true, billingModel: "dynamic", rpm: 15, rpd: null, tpm: null, limitsText: "1 concurrent request, monthly starter credits", limitsNote: "يوفر نماذج سحابية ضخمة مثل deepseek-v4-pro (1.0M context) وminimax-m3 وnemotron-3-ultra." },
+            { id: "gonka-broker", name: "Gonka Broker", url: "https://freellm.net/providers/gonka-broker", baseUrl: "https://api.gonka.ai/v1", envKeyName: "GONKA_API_KEY", noCreditCard: true, browserCors: true, inFreeLlm22: true, billingModel: "monthly_tokens", rpm: 20, rpd: null, tpm: null, limitsText: "~1M tokens/month (shared, varies by model)", limitsNote: "يوفر حصة مليون توكن شهرياً لنماذج zai-org/GLM-5.3-Flash وDeepSeek-V4-Flash-0731 وMiniMax-M2.7." },
+            { id: "google-gemini", name: "Google Gemini", url: "https://freellm.net/providers/google-gemini", baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai", envKeyName: "GEMINI_API_KEY", noCreditCard: true, browserCors: true, inFreeLlm22: true, billingModel: "dynamic", rpm: 15, rpd: 1500, tpm: null, limitsText: "15 RPM, 1,500 RPD (Gemini Flash) | 5 RPM, 50 RPD (2.5 Pro)", limitsNote: "منصة Google AI Studio الرسمية وتشمل Gemini 3.8 Flash (GPQA 95.3%) و3.7 Flash و3.6 Flash وGemma 4 31B." },
+            { id: "ovhcloud-ai-endpoints", name: "OVHcloud AI Endpoints", url: "https://freellm.net/providers/ovhcloud-ai-endpoints", baseUrl: "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1", envKeyName: "OVH_AI_ENDPOINTS_TOKEN", noCreditCard: true, browserCors: true, inFreeLlm22: true, billingModel: "fixed_quota", rpm: 2, rpd: 500, tpm: 20000, limitsText: "2 RPM (anonymous) / higher with free account token", limitsNote: "نقاط نهاية أوروبية مجانية تشمل Qwen3.8-27B (Score 86) وQwen3.6-27B وQwen3.5-397B-A17B." },
+            { id: "opencode", name: "OpenCode Zen", url: "https://freellm.net/providers/opencode", baseUrl: "https://api.opencode.ai/v1", envKeyName: "OPENCODE_API_KEY", noCreditCard: true, browserCors: true, inFreeLlm22: true, billingModel: "dynamic", rpm: 20, rpd: null, tpm: null, limitsText: "Free Zen tier dynamic quota", limitsNote: "يوفر أقوى نماذج البرمجة والاستدلال مجاناً: Qwen3.8 Max، وGLM-5.3، وGLM-5.3-Flash، وKimi K3، وDeepSeek V4.1/V4 Pro." },
+            { id: "agnes-ai", name: "Agnes AI", url: "https://freellm.net/providers/agnes-ai", baseUrl: "https://api.agnes.ai/v1", envKeyName: "AGNES_API_KEY", noCreditCard: true, browserCors: true, inFreeLlm22: true, billingModel: "fixed_quota", rpm: 30, rpd: 1000, tpm: 30000, limitsText: "30 RPM (Text & Image 1K) | 2 RPM (Video)", limitsNote: "يدعم النصوص والصور والفيديو مجاناً عبر نماذج agnes-2.0-flash وagnes-image-2.1-flash وagnes-video-v2.0." },
+            { id: "modelscope", name: "ModelScope", url: "https://freellm.net/providers/modelscope", baseUrl: "https://api-inference.modelscope.cn/v1", envKeyName: "MODELSCOPE_API_TOKEN", noCreditCard: true, browserCors: false, inFreeLlm22: true, billingModel: "fixed_quota", rpm: 30, rpd: 2000, tpm: 40000, limitsText: "Free inference quota (~2,000 req/day)", limitsNote: "منصة ModelScope وتضم Qwen3.8-Flash-Next وDeepSeek-V4.1-Flash وDeepSeek-V4-Pro وERNIE-4.5." },
+            { id: "llm7-io", name: "LLM7.io", url: "https://freellm.net/providers/llm7-io", baseUrl: "https://api.llm7.io/v1", envKeyName: "LLM7_API_KEY", noCreditCard: true, browserCors: true, inFreeLlm22: true, billingModel: "fixed_quota", rpm: 60, rpd: 2000, tpm: 60000, limitsText: "60 RPM, 250 req/hr (free token)", limitsNote: "بوابة سريعة جداً بحد 60 RPM وتستضيف DeepSeek V4 Pro وGLM-5.2 وMiniMax-M3 وCodestral." },
+            { id: "cloudflare-workers-ai", name: "Cloudflare Workers AI", url: "https://freellm.net/providers/cloudflare-workers-ai", baseUrl: "https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/ai/v1", envKeyName: "CLOUDFLARE_API_TOKEN", noCreditCard: true, browserCors: false, inFreeLlm22: true, billingModel: "neurons", rpm: null, rpd: null, tpm: null, neuronsPerDay: 10000, limitsText: "10,000 Neurons/day (shared across models)", limitsNote: "يشغّل @cf/deepseek-ai/deepseek-v4.1-flash-1017 و@cf/qwen/qwen3.8-27b و@cf/zai-org/glm-5.3 ضمن حصة 10K Neurons اليومية." },
+            { id: "openrouter", name: "OpenRouter", url: "https://freellm.net/providers/openrouter", baseUrl: "https://openrouter.ai/api/v1", envKeyName: "OPENROUTER_API_KEY", noCreditCard: true, browserCors: true, inFreeLlm22: true, billingModel: "tiered_daily", rpm: 20, rpd: 50, rpdPaid: 1000, tpm: null, limitsText: "رسمياً: 20 RPM و50 RPD (<10 credits) أو 1,000 RPD (>=10 credits) | في freellm.net: 200 req/day", limitsNote: "يستضيف Inkling Small، وNemotron 3.5 Super VL، وNemotron 3 Ultra (5.5T/wk)، وRecursive Flint، وFree Models Router." },
+            { id: "kilo-code", name: "Kilo Code", url: "https://freellm.net/providers/kilo-code", baseUrl: "https://api.kilocode.ai/v1", envKeyName: "KILOCODE_API_KEY", noCreditCard: true, browserCors: true, inFreeLlm22: true, billingModel: "fixed_quota", rpm: 20, rpd: 1500, tpm: 40000, limitsText: "200 req/hr (free tier)", limitsNote: "يوفر نقاط نهاية مجانية بحد 200 طلب/ساعة لنماذج Nemotron 3.5 Super VL وNemotron 3 Ultra وPoolside Laguna." },
+            { id: "z-ai-zhipu-ai", name: "Z AI (Zhipu AI)", url: "https://freellm.net/providers/z-ai-zhipu-ai", baseUrl: "https://open.bigmodel.cn/api/paas/v4", envKeyName: "ZHIPU_API_KEY", noCreditCard: true, browserCors: true, inFreeLlm22: true, billingModel: "dynamic", rpm: 15, rpd: null, tpm: null, limitsText: "1 concurrent request (Free Flash family)", limitsNote: "المنصة الرسمية لشركة Zhipu AI وتوفر GLM-4.7-Flash وGLM-4.6V-Flash وGLM-4.5-Flash مجاناً." },
+            { id: "cline", name: "Cline", url: "https://freellm.net/providers/cline", baseUrl: "https://api.cline.bot/v1", envKeyName: "CLINE_API_KEY", noCreditCard: true, browserCors: true, inFreeLlm22: true, billingModel: "dynamic", rpm: 20, rpd: null, tpm: null, limitsText: "See provider page (Free Cline models)", limitsNote: "يوفر نماذج مجانية لمستخدمي وكيل البرمجة Cline مثل nemotron-3.5-super-vl وSolar Mini 4 وBeam." },
+            { id: "mistral-ai", name: "Mistral AI", url: "https://freellm.net/providers/mistral-ai", baseUrl: "https://api.mistral.ai/v1", envKeyName: "MISTRAL_API_KEY", noCreditCard: true, browserCors: true, inFreeLlm22: true, billingModel: "dynamic", rpm: 60, rpd: null, tpm: 500000, limitsText: "~1 RPS, 500K TPM (La Plateforme Free Tier)", limitsNote: "توفر Mistral Medium 3.5 (128B)، وMistral Small 4، وCodestral، وMinistral 3 مجاناً." },
+            { id: "cohere", name: "Cohere", url: "https://freellm.net/providers/cohere", baseUrl: "https://api.cohere.ai/compatibility/v1", envKeyName: "COHERE_API_KEY", noCreditCard: true, browserCors: false, inFreeLlm22: true, billingModel: "monthly_trial", rpm: 20, rpd: null, rpmonth: 1000, tpm: null, limitsText: "20 RPM, 1,000 req/month (Trial Key)", limitsNote: "يضم نماذج متميزة بالعربية والاستدلال: Command R7B Arabic، وCommand A (111B/218B)، وCommand A Reasoning/Vision، وAya Expanse 32B." },
+            { id: "siliconflow", name: "SiliconFlow", url: "https://freellm.net/providers/siliconflow", baseUrl: "https://api.siliconflow.cn/v1", envKeyName: "SILICONFLOW_API_KEY", noCreditCard: true, browserCors: true, inFreeLlm22: true, billingModel: "dynamic", rpm: 20, rpd: null, tpm: null, limitsText: "Free tier on selected open models", limitsNote: "يوفر نماذج XingChenAGI/Xing4.0-29B وHunyuan-MT-7B مجاناً." },
+            { id: "aion-labs", name: "Aion Labs", url: "https://freellm.net/providers/aion-labs", baseUrl: "https://api.aionlabs.ai/v1", envKeyName: "AION_API_KEY", noCreditCard: true, browserCors: true, inFreeLlm22: true, billingModel: "fixed_quota", rpm: 15, rpd: 500, tpm: 20000, limitsText: "15 RPM, 20K TPD", limitsNote: "يوفر نماذج aion-3.0 وaion-3.0-mini وaion-2.0 بحصة 15 طلباً/دقيقة و20 ألف توكن يومياً." },
+            { id: "chutes-ai", name: "Chutes.ai", url: "https://freellm.net/providers/chutes-ai", baseUrl: "https://llm.chutes.ai/v1", envKeyName: "CHUTES_API_KEY", noCreditCard: true, browserCors: true, inFreeLlm22: true, billingModel: "dynamic", rpm: 30, rpd: null, tpm: null, limitsText: "Community-powered, no hard cap", limitsNote: "شبكة مجتمعية لامركزية توفر استدلالاً مجانياً لنماذج DeepSeek-R1 وLlama 3.1 70B." },
+            { id: "glhf-chat", name: "Glhf.chat", url: "https://freellm.net/providers/glhf-chat", baseUrl: "https://glhf.chat/api/openai/v1", envKeyName: "GLHF_API_KEY", noCreditCard: true, browserCors: true, inFreeLlm22: true, billingModel: "dynamic", rpm: 30, rpd: null, tpm: null, limitsText: "Unlimited for free models (fair use)", limitsNote: "يوفر وصولاً مجانياً متوافقاً مع OpenAI لنماذج Mixtral 8x7B وLlama 3.1 70B." },
+            { id: "groq", name: "Groq", url: "https://freellm.net/providers/groq", baseUrl: "https://api.groq.com/openai/v1", envKeyName: "GROQ_API_KEY", noCreditCard: true, browserCors: true, inFreeLlm22: true, billingModel: "fixed_quota", rpm: 30, rpd: 1000, tpm: 8000, limitsText: "30 RPM, 1K RPD, 8K TPM (LLM) | 20 RPM, 2K RPD (Whisper)", limitsNote: "يضم النموذج العربي allam-2-7b ونماذج الصوتيات الفائقة whisper-large-v3-turbo إلى جانب llama-3.3-70b-versatile." },
+            { id: "grok-xai", name: "Grok (xAI)", url: "https://freellm.net/providers/grok-xai", baseUrl: "https://api.x.ai/v1", envKeyName: "XAI_API_KEY", noCreditCard: false, browserCors: true, inFreeLlm22: true, billingModel: "credit_trial", rpm: 20, rpd: null, tpm: 40000, limitsText: "$25/month free credits, resets monthly", limitsNote: "يوفر رصيداً شهرياً متجدداً بقيمة $25 لتجربة Grok-2 وGrok-2 Mini عبر واجهة متوافقة مع OpenAI." },
+            // 4 Additional Audited & FreeLLM Providers
+            { id: "cerebras", name: "Cerebras (Audited)", url: "https://inference-docs.cerebras.ai/support/rate-limits", baseUrl: "https://api.cerebras.ai/v1", envKeyName: "CEREBRAS_API_KEY", noCreditCard: false, browserCors: true, inFreeLlm22: false, billingModel: "credit_trial", rpm: 5, rpd: 100, tpm: 30000, limitsText: "5 RPM, 30K TPM (gpt-oss-120b) — يتطلب وسيلة دفع لرصيد $5 الابتدائي", limitsNote: "مزود مدقق في v2.1؛ يوفر سرعة فائقة لنموذج gpt-oss-120b وllama3.1-8b مقابل رصيد ابتدائي $5." },
+            { id: "together", name: "Together AI (FreeLLM)", url: "https://api.together.xyz", baseUrl: "https://api.together.xyz/v1", envKeyName: "TOGETHER_API_KEY", noCreditCard: true, browserCors: true, inFreeLlm22: false, billingModel: "dynamic", rpm: 20, rpd: null, tpm: null, limitsText: "Free endpoints for GLM 5.3, GLM 5.2, Qwen 3.6 35B, Gemma 4", limitsNote: "أحد المزودين الرئيسيين في FreeLLM لنماذج القمة مثل GLM 5.3 (AA Index: 44.8)." },
+            { id: "orcarouter", name: "OrcaRouter (FreeLLM)", url: "#", baseUrl: "https://api.orcarouter.ai/v1", envKeyName: "ORCAROUTER_API_KEY", noCreditCard: true, browserCors: true, inFreeLlm22: false, billingModel: "dynamic", rpm: 20, rpd: null, tpm: null, limitsText: "Free router for GLM 5.3 Flash, DeepSeek V4.1 Flash, Hy3", limitsNote: "موجه مجاني مدرج في FreeLLM لنماذج GLM 5.3 Flash وDeepSeek V4.1 Flash." },
+            { id: "unorouter", name: "UnoRouter (FreeLLM)", url: "#", baseUrl: "https://api.unorouter.ai/v1", envKeyName: "UNOROUTER_API_KEY", noCreditCard: true, browserCors: true, inFreeLlm22: false, billingModel: "dynamic", rpm: 20, rpd: null, tpm: null, limitsText: "Free router for Qwen 3.8, MiniMax M3, Gemini 3.6 Flash", limitsNote: "يستضيف أحدث النماذج الأسبوعية في FreeLLM مثل Mistral Small 4 119B وQwen2.5 VL 72B." }
+        ];
+
+        const PROVIDER_NAME_MAP = {};
+        PROVIDERS_V4.forEach(p => { PROVIDER_NAME_MAP[p.id] = p.name; });
+
+        // Compact tuple array of all models
+        const RAW_MODELS_V4 = [
+            ["nvidia-nim/z-ai-glm-5-3-flash", "z-ai/glm-5.3-flash", "nvidia-nim", true, 93, "1.0M", ["text","image","video","pdf","reasoning"], "Up to 40 RPM", "Aug 26, 2026", "15.0B", 41.8, 91.2],
+            ["nvidia-nim/deepseek-ai-deepseek-v4-1-flash", "deepseek-ai/deepseek-v4.1-flash", "nvidia-nim", true, 89, "1.0M", ["text","image","reasoning"], "Up to 40 RPM", "Oct 17, 2026", "—", 39.5, null],
+            ["ollama-cloud/deepseek-v4-pro", "deepseek-v4-pro", "ollama-cloud", true, 89, "1.0M", ["text","reasoning"], "Session/weekly limits (unpublished)", "Aug 13, 2026", "—", null, null],
+            ["gonka-broker/zai-org-glm-5-3-flash", "zai-org/GLM-5.3-Flash", "gonka-broker", false, 88, "400K", ["text","image","video","pdf","reasoning"], "~1M tokens/month (shared, varies by model)", "Aug 26, 2026", "—", 41.8, 91.2],
+            ["nvidia-nim/minimaxai-minimax-m3-1-flash", "minimaxai/minimax-m3.1-flash", "nvidia-nim", true, 87, "1.0M", ["text","image","video","reasoning"], "Up to 40 RPM", "Oct 19, 2026", "—", null, null],
+            ["google-gemini/gemini-3-8-flash", "Gemini 3.8 Flash", "google-gemini", true, 87, "1.0M", ["text","image","video","audio","pdf","reasoning"], "—", "Sep 2, 2026", "—", 40.9, 95.3],
+            ["nvidia-nim/stepfun-ai-step-5-preview", "stepfun-ai/step-5-preview", "nvidia-nim", true, 87, "1.0M", ["text","image","reasoning"], "Up to 40 RPM", "Sep 18, 2026", "—", 43.7, null],
+            ["ovhcloud-ai-endpoints/qwen3-8-27b", "Qwen3.8-27B", "ovhcloud-ai-endpoints", false, 86, "262K", ["text","image","video","reasoning"], "2 RPM (anonymous)", "Aug 14, 2026", "—", 33.7, 90.5],
+            ["opencode/qwen3-8-max", "Qwen3.8 Max", "opencode", true, 85, "1.0M", ["reasoning","vision"], "", "Sep 2, 2026", "—", null, null],
+            ["opencode/glm-5-3", "GLM-5.3", "opencode", true, 84, "1.0M", ["reasoning"], "", "Aug 18, 2026", "—", 44.8, 91.7],
+            ["google-gemini/gemini-3-7-flash", "Gemini 3.7 Flash", "google-gemini", true, 84, "1.0M", ["text","image","video","audio","pdf","reasoning"], "—", "Aug 13, 2026", "—", null, null],
+            ["agnes-ai/agnes-2-0-flash", "agnes-2.0-flash", "agnes-ai", true, 84, "256K", ["text","image","reasoning","vision"], "30 RPM", "May 25, 2026", "—", null, null],
+            ["modelscope/qwen-qwen3-8-flash-next", "Qwen/Qwen3.8-Flash-Next", "modelscope", true, 83, "8K", [], "", "Aug 26, 2026", "—", null, null],
+            ["opencode/glm-5-3-flash", "GLM-5.3-Flash", "opencode", true, 83, "1.0M", ["reasoning","vision"], "", "Aug 26, 2026", "—", 41.8, 91.2],
+            ["llm7-io/deepseek-v4-pro", "DeepSeek V4 Pro", "llm7-io", true, 82, "1.0M", ["reasoning"], "", "Aug 13, 2026", "—", null, null],
+            ["opencode/kimi-k3", "Kimi K3", "opencode", true, 81, "1.0M", ["reasoning","vision"], "", "Jul 16, 2026", "—", null, null],
+            ["gonka-broker/deepseek-ai-deepseek-v4-flash-0731", "deepseek-ai/DeepSeek-V4-Flash-0731", "gonka-broker", false, 81, "400K", ["text","reasoning"], "~1M tokens/month (shared, varies by model)", "Jul 31, 2026", "—", 34.3, 90.8],
+            ["cloudflare-workers-ai/cf-deepseek-ai-deepseek-v4-1-flash-1017", "@cf/deepseek-ai/deepseek-v4.1-flash-1017", "cloudflare-workers-ai", true, 80, "8K", [], "", "Oct 17, 2026", "—", 39.5, null],
+            ["opencode/deepseek-v4-1-flash", "DeepSeek V4.1 Flash", "opencode", true, 80, "1.0M", ["reasoning","vision"], "", "Oct 17, 2026", "—", 39.5, null],
+            ["modelscope/deepseek-ai-deepseek-v4-1-flash", "deepseek-ai/DeepSeek-V4.1-Flash", "modelscope", true, 79, "8K", [], "", "Oct 17, 2026", "—", 39.5, null],
+            ["openrouter/thinkingmachines-inkling-small", "Thinking Machines: Inkling Small (free)", "openrouter", true, 79, "1.0M", ["text","image","audio","reasoning"], "200 req/day (free tier)", "Jul 30, 2026", "180.9B", 27.8, 89.5],
+            ["openrouter/nvidia-nemotron-3-5-super-vl", "NVIDIA: Nemotron 3.5 Super VL (free)", "openrouter", true, 79, "1.0M", ["text","image","video","reasoning"], "200 req/day (free tier)", "Oct 15, 2026", "1.3T", null, null],
+            ["cloudflare-workers-ai/cf-qwen-qwen3-8-27b", "@cf/qwen/qwen3.8-27b", "cloudflare-workers-ai", true, 79, "8K", [], "", "Aug 14, 2026", "—", 33.7, 90.5],
+            ["cloudflare-workers-ai/cf-deepseek-ai-deepseek-v4-pro-0813", "@cf/deepseek-ai/deepseek-v4-pro-0813", "cloudflare-workers-ai", true, 78, "8K", [], "", "Aug 13, 2026", "—", null, null],
+            ["opencode/deepseek-v4-pro", "DeepSeek V4 Pro", "opencode", true, 78, "1.0M", ["reasoning"], "", "Aug 13, 2026", "—", null, null],
+            ["modelscope/qwen-qwen3-8-27b", "Qwen/Qwen3.8-27B", "modelscope", true, 78, "8K", [], "", "Aug 14, 2026", "—", 33.7, 90.5],
+            ["kilo-code/nvidia-nemotron-3-5-super-vl-free", "nvidia/nemotron-3.5-super-vl:free", "kilo-code", false, 78, "1.0M", ["text","image","video","reasoning"], "200 req/hr", "Oct 15, 2026", "—", null, null],
+            ["google-gemini/gemini-3-6-flash", "Gemini 3.6 Flash", "google-gemini", true, 78, "1.0M", ["text","image","video","audio","pdf","reasoning"], "—", "Jul 21, 2026", "—", 34.0, 92.8],
+            ["modelscope/deepseek-ai-deepseek-v4-pro", "deepseek-ai/DeepSeek-V4-Pro", "modelscope", true, 78, "8K", [], "", "Aug 13, 2026", "—", null, null],
+            ["openrouter/thinkingmachines-inkling", "Thinking Machines: Inkling (free)", "openrouter", true, 77, "1.0M", ["text","image","audio","reasoning"], "200 req/day (free tier)", "Jul 15, 2026", "180.9B", 25.0, 87.2],
+            ["cloudflare-workers-ai/cf-deepseek-ai-deepseek-v4-flash-0731", "@cf/deepseek-ai/deepseek-v4-flash-0731", "cloudflare-workers-ai", true, 77, "8K", [], "", "Jul 31, 2026", "—", 34.3, 90.8],
+            ["opencode/deepseek-v4-flash", "DeepSeek V4 Flash", "opencode", true, 77, "1.0M", ["reasoning"], "", "Jul 31, 2026", "—", 34.3, 90.8],
+            ["modelscope/deepseek-ai-deepseek-v4-flash", "deepseek-ai/DeepSeek-V4-Flash", "modelscope", true, 76, "8K", [], "", "Jul 31, 2026", "—", 34.3, 90.8],
+            ["llm7-io/glm-5-2", "GLM-5.2", "llm7-io", true, 76, "1.0M", ["reasoning"], "", "Jun 16, 2026", "—", 33.7, 89.5],
+            ["ollama-cloud/minimax-m3", "minimax-m3", "ollama-cloud", true, 76, "512K", ["text","image","video","reasoning"], "Session/weekly limits (unpublished)", "Jun 1, 2026", "—", 29.2, 92.9],
+            ["opencode/mistral-large-4", "Mistral Large 4", "opencode", true, 75, "1.0M", ["reasoning","vision"], "", "Oct 6, 2026", "—", null, null],
+            ["opencode/glm-5-2", "GLM-5.2", "opencode", true, 72, "1.0M", ["reasoning"], "", "Jun 16, 2026", "—", 33.7, 89.5],
+            ["openrouter/nvidia-nemotron-3-ultra-550b-a55b", "NVIDIA: Nemotron 3 Ultra (free)", "openrouter", true, 72, "1.0M", ["text","reasoning"], "200 req/day (free tier)", "Jun 4, 2026", "5.5T", 22.9, 86.7],
+            ["nvidia-nim/nvidia-nemotron-3-5-super-vl-120b-a12b", "Nemotron 3.5 Super VL 120B A12B", "nvidia-nim", true, 72, "1.0M", ["reasoning","vision"], "", "Oct 15, 2026", "—", null, null],
+            ["google-gemini/gemini-3-5-flash", "Gemini 3.5 Flash", "google-gemini", true, 72, "1.0M", ["text","image","video","audio","pdf","reasoning"], "15 RPM, 1,500 RPD", "May 19, 2026", "—", null, null],
+            ["kilo-code/nvidia-nemotron-3-ultra-550b-a55b-free", "nvidia/nemotron-3-ultra-550b-a55b:free", "kilo-code", false, 71, "1.0M", ["text","reasoning"], "200 req/hr", "Jun 4, 2026", "—", 22.9, 86.7],
+            ["openrouter/recursive-flint-v1-0", "Recursive: Flint (free)", "openrouter", true, 70, "262K", ["text","reasoning"], "200 req/day (free tier)", "Oct 21, 2026", "170.6B", null, null],
+            ["openrouter/xingchen-agi-xing4-0-29b-a4b", "XingChen: Xing4.0 29B A4B (free)", "openrouter", true, 70, "262K", ["text","reasoning"], "200 req/day (free tier)", "Oct 16, 2026", "64.2B", null, null],
+            ["nvidia-nim/moonshotai-kimi-k2-6", "moonshotai/kimi-k2.6", "nvidia-nim", true, 69, "262K", ["text","image","video","reasoning"], "Up to 40 RPM", "Apr 20, 2026", "2.0B", 27.0, 91.1],
+            ["llm7-io/minimax-m3", "MiniMax-M3", "llm7-io", true, 69, "1.0M", ["reasoning","vision"], "", "Jun 1, 2026", "—", 29.2, 92.9],
+            ["kilo-code/recursive-flint-v1-0-free", "recursive/flint-v1.0:free", "kilo-code", false, 69, "262K", ["text","reasoning"], "200 req/hr", "Oct 21, 2026", "—", null, null],
+            ["google-gemini/gemini-3-5-flash-lite", "Gemini 3.5 Flash-Lite", "google-gemini", true, 67, "1.0M", ["text","image","video","audio","pdf","reasoning"], "—", "Jul 21, 2026", "—", 22.2, 83.8],
+            ["openrouter/nvidia-nemotron-3-5-lightning", "NVIDIA: Nemotron 3.5 Lightning (free)", "openrouter", true, 66, "1.0M", ["text","reasoning"], "200 req/day (free tier)", "Aug 11, 2026", "959.6B", null, null],
+            ["ollama-cloud/nemotron-3-ultra", "nemotron-3-ultra", "ollama-cloud", true, 66, "256K", ["text","reasoning"], "1 concurrent request, monthly starter credits", "Jun 4, 2026", "—", 22.9, 86.7],
+            ["opencode/minimax-m3", "MiniMax-M3", "opencode", true, 65, "1.0M", ["reasoning","vision"], "", "Jun 1, 2026", "—", 29.2, 92.9],
+            ["ovhcloud-ai-endpoints/qwen3-6-27b", "Qwen3.6-27B", "ovhcloud-ai-endpoints", false, 65, "262K", ["text","image","video","reasoning"], "2 RPM (anonymous)", "Apr 22, 2026", "—", 21.4, 84.2],
+            ["openrouter/google-gemma-4-31b-it", "Google: Gemma 4 31B (free)", "openrouter", true, 61, "262K", ["text","image","video","reasoning"], "200 req/day (free tier)", "Apr 2, 2026", "578.2M", 19.0, 85.7],
+            ["z-ai-zhipu-ai/glm-4-7-flash", "GLM-4.7-Flash", "z-ai-zhipu-ai", true, 60, "200K", ["text","reasoning"], "1 concurrent request", "Dec 22, 2025", "—", 22.2, 85.9],
+            ["openrouter/google-gemma-4-26b-a4b-it", "Google: Gemma 4 26B A4B (free)", "openrouter", true, 60, "262K", ["text","image","video","reasoning"], "200 req/day (free tier)", "Apr 2, 2026", "979.3M", 16.7, 79.2],
+            ["gonka-broker/minimaxai-minimax-m2-7", "MiniMaxAI/MiniMax-M2.7", "gonka-broker", false, 60, "200K", ["text","reasoning"], "~1M tokens/month (shared, varies by model)", "Mar 18, 2026", "—", null, null],
+            ["cloudflare-workers-ai/cf-openai-gpt-oss-120b", "@cf/openai/gpt-oss-120b", "cloudflare-workers-ai", true, 53, "128K", ["text","reasoning"], "10K neurons/day (shared)", "Aug 5, 2025", "—", null, null],
+            ["google-gemini/gemma-4-31b-it", "Gemma 4 31B IT", "google-gemini", true, 53, "262K", ["reasoning","vision"], "Varies by model and account", "Apr 2, 2026", "—", 19.0, 85.7],
+            ["mistral-ai/mistral-medium-3-5-128b", "Mistral Medium 3.5 (128B)", "mistral-ai", false, 52, "256K", ["text","image","pdf","reasoning"], "~1 RPS, 500K TPM", "Apr 30, 2026", "—", null, null],
+            ["cloudflare-workers-ai/cf-zai-org-glm-4-7-flash", "@cf/zai-org/glm-4.7-flash", "cloudflare-workers-ai", true, 51, "131K", ["text","reasoning"], "10K neurons/day (shared)", "Jan 19, 2026", "—", 22.2, 85.9],
+            ["google-gemini/gemini-3-1-flash-lite", "Gemini 3.1 Flash-Lite", "google-gemini", true, 51, "1.0M", ["text","image","video","audio","pdf","reasoning"], "—", "Mar 3, 2026", "—", null, null],
+            ["ollama-cloud/gpt-oss-120b", "gpt-oss:120b", "ollama-cloud", true, 50, "128K", ["text","reasoning"], "1 concurrent request, monthly starter credits", "Aug 5, 2025", "—", null, null],
+            ["cloudflare-workers-ai/cf-zai-org-glm-5-3-flash", "@cf/zai-org/glm-5.3-flash", "cloudflare-workers-ai", true, 48, "8K", [], "", "Oct 22, 2026", "—", 41.8, 91.2],
+            ["mistral-ai/codestral", "Codestral", "mistral-ai", false, 47, "128K", ["text"], "~1 RPS, 500K TPM", "May 10, 2026", "—", null, null],
+            ["ovhcloud-ai-endpoints/qwen2-5-vl-72b-instruct", "Qwen2.5-VL-72B-Instruct", "ovhcloud-ai-endpoints", false, 47, "32K", ["text","image"], "2 RPM (anonymous)", "Jan 26, 2025", "—", null, null],
+            ["google-gemini/gemini-2-5-pro", "Gemini 2.5 Pro", "google-gemini", true, 47, "1.0M", ["text","image","video","audio","pdf","reasoning"], "5 RPM, 50 RPD", "Jun 5, 2025", "—", null, null],
+            ["google-gemini/gemini-2-5-flash", "Gemini 2.5 Flash", "google-gemini", true, 46, "1.0M", ["text","image","video","audio","pdf","reasoning"], "—", "May 20, 2025", "—", null, null],
+            ["mistral-ai/mistral-small-4", "Mistral Small 4", "mistral-ai", false, 46, "256K", ["text"], "~1 RPS, 500K TPM", "Mar 16, 2026", "—", null, null],
+            ["cohere/command-r", "Command R+", "cohere", false, 46, "128K", ["text"], "20 RPM", "May 10, 2026", "—", null, null],
+            ["cohere/command-r7b", "Command R7B", "cohere", false, 46, "128K", ["text"], "20 RPM", "May 10, 2026", "—", null, null],
+            ["cohere/command-r7b-arabic", "Command R7B Arabic", "cohere", false, 46, "128K", ["text"], "20 RPM", "Aug 2, 2026", "—", null, null],
+            ["siliconflow/xingchenagi-xing4-0-29b", "XingChenAGI/Xing4.0-29B", "siliconflow", false, 46, "131K", ["text"], "—", "Oct 24, 2026", "—", null, null],
+            ["aion-labs/aion-labs-aion-3-0", "aion-labs/aion-3.0", "aion-labs", false, 45, "128K", ["text","reasoning"], "15 RPM, 20K TPD", "May 5, 2026", "—", null, null],
+            ["cohere/aya-expanse-32b", "Aya Expanse 32B", "cohere", false, 45, "128K", ["text"], "20 RPM", "Oct 24, 2024", "—", null, null],
+            ["cloudflare-workers-ai/cf-zai-org-glm-5-3", "@cf/zai-org/glm-5.3", "cloudflare-workers-ai", true, 45, "8K", [], "", "Oct 22, 2026", "—", 44.8, 91.7],
+            ["z-ai-zhipu-ai/glm-4-5-flash", "GLM-4.5-Flash", "z-ai-zhipu-ai", true, 45, "128K", ["text","reasoning"], "1 concurrent request", "Jul 28, 2025", "—", null, null],
+            ["siliconflow/tencent-hunyuan-mt-7b", "tencent/Hunyuan-MT-7B", "siliconflow", false, 44, "131K", ["text"], "—", "Oct 24, 2026", "—", null, null],
+            ["google-gemini/gemini-2-5-flash-lite", "Gemini 2.5 Flash-Lite", "google-gemini", true, 43, "1.0M", ["text","image","video","audio","pdf","reasoning"], "—", "Jun 17, 2025", "—", null, null],
+            ["chutes-ai/deepseek-ai-deepseek-r1", "DeepSeek-R1", "chutes-ai", false, 43, "131K", ["text","reasoning"], "Community-powered, no hard cap", "May 28, 2025", "—", null, null],
+            ["cohere/command-a-111b", "Command A (111B)", "cohere", false, 43, "256K", ["text"], "20 RPM", "Mar 13, 2025", "—", null, null],
+            ["cohere/command-a-reasoning", "Command A Reasoning", "cohere", false, 43, "256K", ["text","reasoning"], "20 RPM", "Mar 13, 2025", "—", null, null],
+            ["glhf-chat/mistralai-mixtral-8x7b-instruct-v0-1", "Mixtral 8x7B", "glhf-chat", true, 42, "33K", ["text"], "Unlimited for free models", "Dec 11, 2023", "—", null, null],
+            ["groq/whisper-large-v3", "whisper-large-v3", "groq", true, 42, "131K", ["text","audio"], "20 RPM, 2,000 RPD", "May 10, 2026", "—", null, null],
+            ["groq/whisper-large-v3-turbo", "whisper-large-v3-turbo", "groq", true, 42, "131K", ["text","audio"], "20 RPM, 2,000 RPD", "May 10, 2026", "—", null, null],
+            ["openrouter/openrouter-free", "Free Models Router", "openrouter", true, 42, "200K", ["text","image","reasoning"], "200 req/day (free tier)", "Feb 1, 2026", "—", null, null],
+            ["cohere/command-a-218b", "Command A+ (218B)", "cohere", false, 42, "128K", ["text"], "20 RPM", "Mar 13, 2025", "—", null, null],
+            ["cloudflare-workers-ai/cf-deepseek-ai-deepseek-r1-distill-qwen-32b", "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b", "cloudflare-workers-ai", true, 41, "80K", ["text","reasoning"], "10K neurons/day (shared)", "Jan 20, 2025", "—", null, null],
+            ["groq/allam-2-7b", "allam-2-7b", "groq", true, 40, "8K", ["text"], "30 RPM, 1,000 RPD", "Jan 23, 2025", "—", null, null],
+            ["nvidia-nim/nvidia-nemotron-3-5-embed-8b", "nvidia/nemotron-3.5-embed-8b", "nvidia-nim", true, 40, "131K", ["text"], "Up to 40 RPM", "Oct 21, 2026", "221.7M", null, null],
+            ["llm7-io/gpt-oss-20b", "GPT OSS 20B", "llm7-io", true, 39, "131K", ["reasoning"], "", "Aug 5, 2025", "—", null, null],
+            ["grok-xai/grok-2-mini", "Grok-2 Mini", "grok-xai", false, 39, "131K", ["text"], "$25/month free credits, resets monthly", "Jun 27, 2026", "—", null, null],
+            ["chutes-ai/meta-llama-meta-llama-3-1-70b-instruct", "Llama 3.1 70B", "chutes-ai", false, 39, "131K", ["text"], "Community-powered, no hard cap", "Jul 23, 2024", "—", null, null],
+            ["cloudflare-workers-ai/cf-meta-llama-3-3-70b-instruct-fp8-fast", "@cf/meta/llama-3.3-70b-instruct-fp8-fast", "cloudflare-workers-ai", true, 38, "24K", ["text"], "10K neurons/day (shared)", "Dec 6, 2024", "—", null, null],
+            ["mistral-ai/ministral-3-8b", "Ministral 3 8B", "mistral-ai", false, 37, "256K", ["text"], "~1 RPS, 500K TPM", "Dec 2, 2025", "—", null, null],
+            ["cloudflare-workers-ai/cf-qwen-qwq-32b", "@cf/qwen/qwq-32b", "cloudflare-workers-ai", true, 37, "8K", [], "", "Mar 5, 2025", "—", null, null],
+            ["mistral-ai/ministral-3-3b", "Ministral 3 3B", "mistral-ai", false, 36, "256K", ["text"], "~1 RPS, 500K TPM", "Dec 2, 2025", "—", null, null],
+            ["cline/reflection-beam-free", "Beam", "cline", true, 34, "0", ["text"], "See provider page", "Oct 21, 2026", "—", null, null],
+            ["cline/nvidia-nemotron-3-5-lightning-free", "Nemotron 3.5 Lightning", "cline", true, 34, "0", ["text"], "See provider page", "Oct 21, 2026", "—", null, null],
+            ["grok-xai/grok-2", "Grok-2", "grok-xai", false, 31, "131K", ["text"], "$25/month free credits, resets monthly", "Dec 12, 2024", "—", null, null]
+        ];
+
+        const MODELS_V4 = RAW_MODELS_V4.map(r => ({
+            id: r[0],
+            name: r[1],
+            provider: { id: r[2], name: PROVIDER_NAME_MAP[r[2]] || r[2] },
+            verified: r[3],
+            score: r[4],
+            context: r[5],
+            modalities: r[6],
+            rateLimit: r[7],
+            released: r[8],
+            weeklyTokens: r[9],
+            status: "Online",
+            url: `https://freellm.net/models/${r[0]}`,
+            aaIndex: r[10],
+            gpqa: r[11]
+        }));
+
+        const RETIRED_ITEMS_V4 = [
+            { provider: 'GitHub', item: 'GitHub Models (models.inference.ai.azure.com)', status: 'أُغلق نهائياً في 2026-07-30', replacement: 'NVIDIA NIM / OpenCode Zen / Groq', source: 'https://github.blog/changelog/' },
+            { provider: 'Groq', item: 'llama-3.1-70b-versatile / llama3-70b-8192', status: 'Retired (متوقف)', replacement: 'llama-3.3-70b-versatile / allam-2-7b', source: 'https://console.groq.com/docs/deprecations' },
+            { provider: 'Groq', item: 'mixtral-8x7b-32768 / gemma2-9b-it', status: 'Retired (متوقف)', replacement: 'Mixtral 8x7B on Glhf.chat / Gemma 4 31B', source: 'https://console.groq.com/docs/deprecations' },
+            { provider: 'Groq', item: 'deepseek-r1-distill-llama-70b', status: 'Retired on Groq', replacement: 'deepseek-ai/deepseek-v4.1-flash (NVIDIA NIM)', source: 'https://console.groq.com/docs/deprecations' },
+            { provider: 'Google Gemini', item: 'gemini-2.0-flash / gemini-2.0-flash-lite', status: 'Deprecated / Shutting Down', replacement: 'Gemini 3.8 Flash / Gemini 3.6 Flash', source: 'https://ai.google.dev/gemini-api/docs/models' }
+        ];
+
+        let currentModalityFilter = 'all';
+        let currentV4ModelView = 'grid';
+        let currentProviderFilter = 'freellm22';
+        let currentCodeLanguage = 'go';
+        let currentPlaygroundMode = 'failover_sim';
+        let lastPlaygroundRawText = '';
+
+        function getProviderById(id) {
+            return PROVIDERS_V4.find(p => p.id === id) || PROVIDERS_V4[0];
+        }
+
+        function getModelsForProvider(providerId) {
+            const list = MODELS_V4.filter(m => m.provider.id === providerId);
+            if (list.length > 0) return list;
+            if (providerId === 'cerebras') return [{ name: 'gpt-oss-120b', score: 80, context: '128K' }, { name: 'llama3.1-8b', score: 60, context: '128K' }];
+            if (providerId === 'together') return [{ name: 'glm-5-3', score: 88, context: '1.0M' }, { name: 'glm-5-2', score: 78, context: '1.0M' }];
+            if (providerId === 'orcarouter') return [{ name: 'glm-5-3-flash', score: 90, context: '1.0M' }, { name: 'deepseek-v4-1-flash', score: 88, context: '1.0M' }];
+            if (providerId === 'unorouter') return [{ name: 'qwen3-8-27b', score: 85, context: '262K' }, { name: 'gemini-3-6-flash', score: 80, context: '1.0M' }];
+            return MODELS_V4.slice(0, 5);
+        }
+
+        function switchMainTab(tabId) {
+            ['models', 'directory', 'codegen', 'playground', 'calculator'].forEach(t => {
+                const sec = document.getElementById(`tab-${t}`);
+                if (sec) sec.classList.toggle('hidden', t !== tabId);
+
+                const dBtn = document.getElementById(`nav-${t}`);
+                if (dBtn) {
+                    dBtn.className = t === tabId
+                        ? 'nav-btn px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 bg-emerald-500 text-slate-950 shadow-md'
+                        : 'nav-btn px-3.5 py-2 rounded-lg text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800/60 transition-all flex items-center gap-1.5';
+                }
+
+                const mBtn = document.getElementById(`mnav-${t}`);
+                if (mBtn) {
+                    mBtn.className = t === tabId
+                        ? 'mnav-btn shrink-0 px-3 py-2 rounded-lg text-xs font-bold bg-emerald-500 text-slate-950 flex items-center gap-1.5'
+                        : 'mnav-btn shrink-0 px-3 py-2 rounded-lg text-xs font-bold bg-slate-900 text-slate-300 border border-slate-800 flex items-center gap-1.5';
+                }
+            });
+        }
+
+        function initModelCatalogFilters() {
+            document.getElementById('navModelsCount').textContent = MODELS_V4.length;
+            const pSelect = document.getElementById('v4ProviderFilter');
+            pSelect.innerHTML = `<option value="all">جميع المزودين (22 مزوداً)</option>`;
+            PROVIDERS_V4.filter(p => p.inFreeLlm22).forEach(p => {
+                const count = MODELS_V4.filter(m => m.provider.id === p.id).length;
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                opt.textContent = `${p.name} (${count})`;
+                pSelect.appendChild(opt);
+            });
+
+            document.getElementById('mod-count-all').textContent = MODELS_V4.length;
+            document.getElementById('mod-count-reasoning').textContent = MODELS_V4.filter(m => m.modalities.includes('reasoning')).length;
+            document.getElementById('mod-count-image').textContent = MODELS_V4.filter(m => m.modalities.includes('image') || m.modalities.includes('vision')).length;
+            document.getElementById('mod-count-video').textContent = MODELS_V4.filter(m => m.modalities.includes('video')).length;
+            document.getElementById('mod-count-audio').textContent = MODELS_V4.filter(m => m.modalities.includes('audio')).length;
+            document.getElementById('mod-count-pdf').textContent = MODELS_V4.filter(m => m.modalities.includes('pdf')).length;
+        }
+
+        function setModalityFilter(mod) {
+            currentModalityFilter = mod;
+            ['all', 'reasoning', 'image', 'video', 'audio', 'pdf'].forEach(k => {
+                const b = document.getElementById(`mod-${k}`);
+                if (!b) return;
+                b.className = k === mod
+                    ? 'mod-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 text-slate-950 transition-all'
+                    : 'mod-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700 transition-all';
+            });
+            renderV4Models();
+        }
+
+        function setV4ModelView(view) {
+            currentV4ModelView = view;
+            const isGrid = view === 'grid';
+            document.getElementById('v4ModelsGrid').classList.toggle('hidden', !isGrid);
+            document.getElementById('v4ModelsTableWrap').classList.toggle('hidden', isGrid);
+            document.getElementById('v4view-grid').className = isGrid
+                ? 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-emerald-400 flex items-center gap-1.5'
+                : 'px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white flex items-center gap-1.5';
+            document.getElementById('v4view-table').className = !isGrid
+                ? 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-emerald-400 flex items-center gap-1.5'
+                : 'px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white flex items-center gap-1.5';
+        }
+
+        function scoreBadgeHtml(score) {
+            const cls = score >= 80
+                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                : score >= 60
+                ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+                : 'bg-slate-800 text-slate-300 border-slate-700';
+            return `<span class="px-2.5 py-0.5 rounded-lg font-mono text-xs font-extrabold border ${cls}">Score ${score}</span>`;
+        }
+
+        function renderModalityPills(mods) {
+            if (!mods || mods.length === 0) {
+                return `<span class="px-2 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800 text-[10px] font-mono">text</span>`;
+            }
+            const map = {
+                text: { label: 'نص', cls: 'bg-slate-800 text-slate-300' },
+                reasoning: { label: 'تفكير منطقي', cls: 'bg-purple-500/15 text-purple-300 border border-purple-500/30' },
+                image: { label: 'صور', cls: 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30' },
+                vision: { label: 'رؤية', cls: 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30' },
+                video: { label: 'فيديو', cls: 'bg-rose-500/15 text-rose-300 border border-rose-500/30' },
+                audio: { label: 'صوت', cls: 'bg-amber-500/15 text-amber-300 border border-amber-500/30' },
+                pdf: { label: 'PDF', cls: 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' }
+            };
+            return mods.map(m => {
+                const info = map[m] || { label: m, cls: 'bg-slate-800 text-slate-300' };
+                return `<span class="px-2 py-0.5 rounded text-[10px] font-bold ${info.cls}">${escapeHtml(info.label)}</span>`;
+            }).join('');
+        }
+
+        function renderV4Models() {
+            const q = (document.getElementById('v4ModelSearch').value || '').trim().toLowerCase();
+            const provFilter = document.getElementById('v4ProviderFilter').value;
+            const sortBy = document.getElementById('v4SortSelect').value;
+            const verifiedOnly = document.getElementById('v4VerifiedOnly').checked;
+            const millionOnly = document.getElementById('v4MillionOnly').checked;
+
+            const filtered = MODELS_V4.filter(m => {
+                if (provFilter !== 'all' && m.provider.id !== provFilter) return false;
+                if (verifiedOnly && !m.verified) return false;
+                if (millionOnly && parseContextString(m.context) < 1000000) return false;
+                if (currentModalityFilter !== 'all') {
+                    if (currentModalityFilter === 'image') {
+                        if (!m.modalities.includes('image') && !m.modalities.includes('vision')) return false;
+                    } else if (!m.modalities.includes(currentModalityFilter)) {
+                        return false;
+                    }
+                }
+                if (q) {
+                    const hay = `${m.id} ${m.name} ${m.provider.name} ${m.provider.id}`.toLowerCase();
+                    if (!hay.includes(q)) return false;
+                }
+                return true;
+            });
+
+            filtered.sort((a, b) => {
+                if (sortBy === 'context') return parseContextString(b.context) - parseContextString(a.context) || (b.score - a.score);
+                if (sortBy === 'released') return parseReleaseDate(b.released) - parseReleaseDate(a.released) || (b.score - a.score);
+                if (sortBy === 'weekly') return parseWeeklyTokens(b.weeklyTokens) - parseWeeklyTokens(a.weeklyTokens) || (b.score - a.score);
+                if (sortBy === 'aaindex') return (b.aaIndex || -1) - (a.aaIndex || -1) || (b.score - a.score);
+                return b.score - a.score;
+            });
+
+            document.getElementById('v4ShowingCount').textContent = filtered.length;
+
+            const grid = document.getElementById('v4ModelsGrid');
+            grid.innerHTML = '';
+            const tbody = document.getElementById('v4ModelsTableBody');
+            tbody.innerHTML = '';
+
+            filtered.forEach((m, idx) => {
+                const benchmarkHtml = (m.aaIndex || m.gpqa)
+                    ? `<div class="flex items-center gap-2 text-[11px] font-mono text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg">
+                        ${m.aaIndex ? `<span>AA Index: <strong>${m.aaIndex}</strong></span>` : ''}
+                        ${m.gpqa ? `<span>GPQA: <strong>${m.gpqa}%</strong></span>` : ''}
+                       </div>`
+                    : '';
+
+                const card = document.createElement('div');
+                card.className = 'glass-card rounded-2xl p-4 flex flex-col justify-between gap-3 transition-all';
+                card.innerHTML = `
+                    <div class="space-y-2.5">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="font-mono font-extrabold text-white text-sm truncate" dir="ltr">${escapeHtml(m.name)}</span>
+                                    ${m.verified ? '<i class="fa-solid fa-circle-check text-emerald-400 text-xs shrink-0" title="موثق (Verified)"></i>' : ''}
+                                </div>
+                                <div class="text-[11px] font-mono text-slate-400 truncate mt-0.5" dir="ltr">${escapeHtml(m.id)}</div>
+                            </div>
+                            ${scoreBadgeHtml(m.score)}
+                        </div>
+
+                        <div class="flex flex-wrap items-center justify-between gap-2 text-xs bg-slate-950/80 px-3 py-2 rounded-xl border border-slate-800/80">
+                            <span class="font-bold text-emerald-400">${escapeHtml(m.provider.name)}</span>
+                            <span class="font-mono text-cyan-300 font-bold" dir="ltr">Context: ${escapeHtml(m.context)}</span>
+                        </div>
+
+                        ${benchmarkHtml}
+
+                        <div class="flex flex-wrap gap-1">
+                            ${renderModalityPills(m.modalities)}
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-400 pt-1">
+                            <div class="truncate">الحد: <strong class="text-slate-200 font-mono" dir="ltr">${escapeHtml(m.rateLimit || 'راجع المزود')}</strong></div>
+                            <div class="text-left font-mono" dir="ltr">${m.weeklyTokens && m.weeklyTokens !== '—' ? `<span class="text-amber-400">${escapeHtml(m.weeklyTokens)}/wk</span>` : escapeHtml(m.released)}</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-1.5 pt-2.5 border-t border-slate-800/80">
+                        <button onclick="copyToClipboard('${escapeHtml(m.name)}', 'تم نسخ معرف النموذج')" class="px-2 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 text-[11px] font-bold flex items-center justify-center gap-1 border border-slate-800">
+                            <i class="fa-regular fa-copy"></i>
+                            <span>نسخ المعرّف</span>
+                        </button>
+                        <button onclick="jumpToModelAction('${escapeHtml(m.provider.id)}', '${escapeHtml(m.name)}', 'codegen')" class="px-2 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-code"></i>
+                            <span>توليد كود</span>
+                        </button>
+                        <button onclick="jumpToModelAction('${escapeHtml(m.provider.id)}', '${escapeHtml(m.name)}', 'playground')" class="px-2 py-1.5 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 text-[11px] font-bold flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-flask"></i>
+                            <span>فحص</span>
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-900/50 transition-colors';
+                tr.innerHTML = `
+                    <td class="py-3 px-3 font-mono text-slate-500">${idx + 1}</td>
+                    <td class="py-3 px-4" dir="ltr">
+                        <div class="font-mono font-bold text-white flex items-center gap-1.5">
+                            <span>${escapeHtml(m.name)}</span>
+                            ${m.verified ? '<i class="fa-solid fa-circle-check text-emerald-400 text-[11px]"></i>' : ''}
+                        </div>
+                        <div class="text-[11px] font-mono text-slate-500">${escapeHtml(m.id)}</div>
+                    </td>
+                    <td class="py-3 px-3 font-bold text-emerald-400">${escapeHtml(m.provider.name)}</td>
+                    <td class="py-3 px-3">
+                        ${scoreBadgeHtml(m.score)}
+                        ${m.aaIndex ? `<div class="text-[10px] font-mono text-amber-300 mt-1">AA: ${m.aaIndex} | GPQA: ${m.gpqa || '—'}%</div>` : ''}
+                    </td>
+                    <td class="py-3 px-3 font-mono font-bold text-cyan-300" dir="ltr">${escapeHtml(m.context)}</td>
+                    <td class="py-3 px-3"><div class="flex flex-wrap gap-1">${renderModalityPills(m.modalities)}</div></td>
+                    <td class="py-3 px-3 font-mono text-xs text-slate-300" dir="ltr">${escapeHtml(m.rateLimit || '—')}</td>
+                    <td class="py-3 px-3 font-mono text-xs text-slate-400" dir="ltr">
+                        <div>${escapeHtml(m.released)}</div>
+                        ${m.weeklyTokens && m.weeklyTokens !== '—' ? `<div class="text-amber-400 font-bold">${escapeHtml(m.weeklyTokens)}/wk</div>` : ''}
+                    </td>
+                    <td class="py-3 px-3">
+                        <div class="flex items-center justify-center gap-1">
+                            <button onclick="copyToClipboard('${escapeHtml(m.name)}', 'تم نسخ معرف النموذج')" class="p-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200" title="نسخ المعرف"><i class="fa-regular fa-copy"></i></button>
+                            <button onclick="jumpToModelAction('${escapeHtml(m.provider.id)}', '${escapeHtml(m.name)}', 'codegen')" class="p-1.5 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300" title="توليد كود"><i class="fa-solid fa-code"></i></button>
+                            <button onclick="jumpToModelAction('${escapeHtml(m.provider.id)}', '${escapeHtml(m.name)}', 'playground')" class="p-1.5 rounded bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300" title="فحص في المختبر"><i class="fa-solid fa-flask"></i></button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function jumpToModelAction(providerId, modelName, targetTab) {
+            if (targetTab === 'codegen') {
+                document.getElementById('cgPatternMode').value = 'single';
+                document.getElementById('cgProvider').value = providerId;
+                onCodegenProviderChange(modelName);
+                switchMainTab('codegen');
+                showToast(`تم تجهيز كود ${modelName} على ${PROVIDER_NAME_MAP[providerId] || providerId}`);
+            } else {
+                setPlaygroundMode('live');
+                document.getElementById('liveProviderSelect').value = providerId;
+                onLiveProviderChange(modelName);
+                switchMainTab('playground');
+                showToast(`تم نقل ${modelName} إلى فاحص المفاتيح الحي`);
+            }
+        }
+
+        function setProviderFilter(f) {
+            currentProviderFilter = f;
+            ['freellm22', 'all', 'nocard', 'cors'].forEach(k => {
+                const b = document.getElementById(`pfilt-${k}`);
+                if (!b) return;
+                b.className = k === f
+                    ? 'pfilt-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 text-slate-950 transition-all'
+                    : 'pfilt-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-slate-300 border border-slate-800 hover:border-slate-700 transition-all';
+            });
+            renderProvidersDirectory();
+        }
+
+        function renderProvidersDirectory() {
+            const q = (document.getElementById('providerSearch').value || '').trim().toLowerCase();
+            const container = document.getElementById('providersGrid');
+            container.innerHTML = '';
+
+            const filtered = PROVIDERS_V4.filter(p => {
+                if (currentProviderFilter === 'freellm22' && !p.inFreeLlm22) return false;
+                if (currentProviderFilter === 'nocard' && !p.noCreditCard) return false;
+                if (currentProviderFilter === 'cors' && !p.browserCors) return false;
+                if (q) {
+                    const hay = `${p.name} ${p.id} ${p.baseUrl} ${p.limitsText} ${p.limitsNote}`.toLowerCase();
+                    if (!hay.includes(q)) return false;
+                }
+                return true;
+            });
+
+            filtered.forEach(p => {
+                const provModels = getModelsForProvider(p.id);
+                const topModelsHtml = provModels.slice(0, 4).map(m =>
+                    `<button onclick="jumpToModelAction('${escapeHtml(p.id)}', '${escapeHtml(m.name)}', 'codegen')" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-slate-800 font-mono text-[11px] transition-all" dir="ltr">${escapeHtml(m.name)}</button>`
+                ).join('');
+
+                const card = document.createElement('div');
+                card.className = 'glass-card rounded-2xl p-5 flex flex-col justify-between gap-4';
+                card.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="flex items-start justify-between gap-2">
+                            <div>
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <h3 class="text-base font-extrabold text-white">${escapeHtml(p.name)}</h3>
+                                    <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">${provModels.length} نموذج</span>
+                                </div>
+                                <a href="${escapeHtml(p.url)}" target="_blank" rel="noopener noreferrer" class="text-[11px] text-emerald-400 hover:underline font-mono" dir="ltr">${escapeHtml(p.url)}</a>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-1.5">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${p.noCreditCard ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/15 text-amber-300 border border-amber-500/30'}">
+                                    ${p.noCreditCard ? 'بدون بطاقة' : 'يتطلب بطاقة/رصيد'}
+                                </span>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-mono ${p.browserCors ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30' : 'bg-slate-800 text-slate-400'}">
+                                    ${p.browserCors ? 'CORS OK' : 'Server Only'}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800/90 text-xs space-y-1.5">
+                            <div class="flex items-center justify-between text-slate-400">
+                                <span>Base URL:</span>
+                                <code class="font-mono text-cyan-300 text-[11px]" dir="ltr">${escapeHtml(p.baseUrl)}</code>
+                            </div>
+                            <div class="flex items-center justify-between text-slate-400">
+                                <span>متغير البيئة:</span>
+                                <code class="font-mono text-emerald-400 text-[11px]" dir="ltr">${escapeHtml(p.envKeyName)}</code>
+                            </div>
+                            <div class="flex items-center justify-between text-slate-400">
+                                <span>الحدود المعلنة:</span>
+                                <span class="font-bold text-white text-[11px]" dir="ltr">${escapeHtml(p.limitsText)}</span>
+                            </div>
+                        </div>
+
+                        <p class="text-xs text-slate-400 leading-relaxed">${escapeHtml(p.limitsNote)}</p>
+
+                        <div>
+                            <div class="text-[11px] font-bold text-slate-400 mb-1.5">أبرز النماذج:</div>
+                            <div class="flex flex-wrap gap-1.5">
+                                ${topModelsHtml || '<span class="text-slate-500 text-xs">لا توجد نماذج مسجلة</span>'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 pt-3 border-t border-slate-800/80">
+                        <button onclick="jumpToModelAction('${escapeHtml(p.id)}', '${escapeHtml(provModels[0]?.name || p.id)}', 'codegen')" class="flex-1 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 text-xs font-bold flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-code"></i>
+                            <span>توليد كود الربط</span>
+                        </button>
+                        <button onclick="jumpToModelAction('${escapeHtml(p.id)}', '${escapeHtml(provModels[0]?.name || p.id)}', 'playground')" class="flex-1 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/30 text-xs font-bold flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-flask"></i>
+                            <span>فحص المفتاح</span>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // =========================================================
+        // TAB 3: CODE GENERATOR & FAILOVER ROUTER
+        // =========================================================
+        function initCodegen() {
+            const pSel = document.getElementById('cgProvider');
+            pSel.innerHTML = '';
+            PROVIDERS_V4.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                opt.textContent = `${p.name} (${p.limitsText})`;
+                pSel.appendChild(opt);
+            });
+            pSel.value = 'nvidia-nim';
+            onCodegenProviderChange();
+        }
+
+        function onCodegenProviderChange(preferredModel) {
+            const pid = document.getElementById('cgProvider').value;
+            const p = getProviderById(pid);
+            const mSel = document.getElementById('cgModel');
+            mSel.innerHTML = '';
+
+            const models = getModelsForProvider(pid);
+            models.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.name;
+                opt.textContent = `${m.name} (${m.context} ctx)`;
+                mSel.appendChild(opt);
+            });
+
+            if (preferredModel) {
+                mSel.value = preferredModel;
+            }
+
+            const ep = p.baseUrl.includes('{ACCOUNT_ID}')
+                ? p.baseUrl.replace('{ACCOUNT_ID}', 'YOUR_CLOUDFLARE_ACCOUNT_ID') + '/chat/completions'
+                : p.baseUrl.endsWith('/chat/completions') ? p.baseUrl : p.baseUrl + '/chat/completions';
+            document.getElementById('cgEndpointUrl').textContent = ep;
+            document.getElementById('cgGetKeyLink').href = p.url;
+
+            const infoEl = document.getElementById('cgProviderInfo');
+            infoEl.innerHTML = `
+                <div class="flex justify-between"><span class="text-slate-400">الحدود:</span><strong class="text-white">${escapeHtml(p.limitsText)}</strong></div>
+                <div class="flex justify-between"><span class="text-slate-400">المفتاح:</span><code class="text-emerald-400 font-mono">${escapeHtml(p.envKeyName)}</code></div>
+                <div class="text-[11px] text-slate-400 pt-1 border-t border-slate-800">${escapeHtml(p.limitsNote)}</div>
+            `;
+
+            updateGeneratedCode();
+        }
+
+        function setCodeLanguage(lang) {
+            currentCodeLanguage = lang;
+            ['go', 'python', 'node', 'curl'].forEach(k => {
+                const btn = document.getElementById(`lang-${k}`);
+                if (!btn) return;
+                btn.className = k === lang
+                    ? 'lang-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-500 text-slate-950 flex items-center gap-2 transition-all shadow'
+                    : 'lang-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-950 text-slate-300 border border-slate-800 hover:border-slate-700 flex items-center gap-2 transition-all';
+            });
+            updateGeneratedCode();
+        }
+
+        function updateGeneratedCode() {
+            const pattern = document.getElementById('cgPatternMode').value;
+            const isSingle = pattern === 'single';
+            document.getElementById('cgSingleProviderGroup').classList.toggle('hidden', !isSingle);
+
+            const isStream = document.getElementById('enableStream').checked;
+            document.getElementById('cgStreamLabel').textContent = `stream: ${isStream}`;
+
+            const pid = document.getElementById('cgProvider').value;
+            const p = getProviderById(pid);
+            const model = document.getElementById('cgModel').value || 'z-ai/glm-5.3-flash';
+            const sys = document.getElementById('cgSystemPrompt').value;
+            const user = document.getElementById('cgUserPrompt').value;
+            const temp = parseFloat(document.getElementById('cgTemp').value);
+
+            let code = '';
+            let hint = '';
+
+            if (pattern === 'failover_v4') {
+                code = generateFailoverCode(currentCodeLanguage, sys, user, temp);
+                hint = `Failover Chain: NVIDIA NIM (40 RPM) -> OpenCode -> OpenRouter -> Groq -> LLM7 (معالجة تلقائية لـ HTTP 429)`;
+                document.getElementById('cgEndpointUrl').textContent = "Multi-Endpoint Failover Chain";
+            } else {
+                const ep = document.getElementById('cgEndpointUrl').textContent;
+                if (currentCodeLanguage === 'go') {
+                    code = generateGoCode(ep, p.envKeyName, model, sys, user, temp, isStream);
+                    hint = `go run main.go  (يعتمد على الحزمة القياسية net/http)`;
+                } else if (currentCodeLanguage === 'python') {
+                    code = generatePythonCode(ep, p.envKeyName, model, sys, user, temp, isStream);
+                    hint = `pip install requests  (يدعم SSE)`;
+                } else if (currentCodeLanguage === 'node') {
+                    code = generateNodeCode(ep, p.envKeyName, model, sys, user, temp, isStream);
+                    hint = `node main.mjs  (يعتمد على fetch الأصلي في Node 18+)`;
+                } else {
+                    code = generateCurlCode(ep, p.envKeyName, model, sys, user, temp, isStream);
+                    hint = `curl -X POST ...  (آمن مع POSIX single-quote escaping)`;
+                }
+            }
+
+            document.getElementById('generatedCodeBlock').textContent = code;
+            document.getElementById('cgInstallHint').textContent = hint;
+        }
+
+        function generateGoCode(ep, envKey, model, sys, user, temp, stream) {
+            return `package main
+
+import (
+\t"bufio"
+\t"bytes"
+\t"encoding/json"
+\t"fmt"
+\t"io"
+\t"net/http"
+\t"os"
+\t"strings"
+\t"time"
+)
+
+type Message struct {
+\tRole    string \`json:"role"\`
+\tContent string \`json:"content"\`
+}
+
+type ChatPayload struct {
+\tModel       string    \`json:"model"\`
+\tMessages    []Message \`json:"messages"\`
+\tTemperature float64   \`json:"temperature"\`
+\tStream      bool      \`json:"stream"\`
+}
+
+func main() {
+\tapiKey := os.Getenv("${envKey}")
+\tif apiKey == "" {
+\t\tfmt.Println("خطأ: يرجى تعيين متغير البيئة ${envKey}")
+\t\treturn
+\t}
+
+\tpayload := ChatPayload{
+\t\tModel: "${model}",
+\t\tMessages: []Message{
+\t\t\t{Role: "system", Content: ${JSON.stringify(sys)}},
+\t\t\t{Role: "user", Content: ${JSON.stringify(user)}},
+\t\t},
+\t\tTemperature: ${temp},
+\t\tStream:      ${stream},
+\t}
+
+\tbodyBytes, err := json.Marshal(payload)
+\tif err != nil {
+\t\tpanic(err)
+\t}
+
+\treq, err := http.NewRequest("POST", "${ep}", bytes.NewBuffer(bodyBytes))
+\tif err != nil {
+\t\tpanic(err)
+\t}
+
+\treq.Header.Set("Authorization", "Bearer "+apiKey)
+\treq.Header.Set("Content-Type", "application/json")
+
+\tclient := &http.Client{Timeout: 60 * time.Second}
+\tresp, err := client.Do(req)
+\tif err != nil {
+\t\tpanic(err)
+\t}
+\tdefer resp.Body.Close()
+
+\tif resp.StatusCode != http.StatusOK {
+\t\terrBody, _ := io.ReadAll(resp.Body)
+\t\tfmt.Printf("HTTP %d: %s\\n", resp.StatusCode, string(errBody))
+\t\treturn
+\t}
+
+${stream ? `\t// قراءة البث الحي SSE
+\tscanner := bufio.NewScanner(resp.Body)
+\tfor scanner.Scan() {
+\t\tline := scanner.Text()
+\t\tif strings.HasPrefix(line, "data: ") {
+\t\t\tdata := strings.TrimPrefix(line, "data: ")
+\t\t\tif data == "[DONE]" {
+\t\t\t\tbreak
+\t\t\t}
+\t\t\tvar chunk struct {
+\t\t\t\tChoices []struct {
+\t\t\t\t\tDelta struct {
+\t\t\t\t\t\tContent string \`json:"content"\`
+\t\t\t\t\t} \`json:"delta"\`
+\t\t\t\t} \`json:"choices"\`
+\t\t\t}
+\t\t\tif err := json.Unmarshal([]byte(data), &chunk); err == nil && len(chunk.Choices) > 0 {
+\t\t\t\tfmt.Print(chunk.Choices[0].Delta.Content)
+\t\t\t}
+\t\t}
+\t}
+\tfmt.Println()` : `\tvar result struct {
+\t\tChoices []struct {
+\t\t\tMessage struct {
+\t\t\t\tContent string \`json:"content"\`
+\t\t\t} \`json:"message"\`
+\t\t} \`json:"choices"\`
+\t}
+\tif err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+\t\tpanic(err)
+\t}
+\tif len(result.Choices) > 0 {
+\t\tfmt.Println(result.Choices[0].Message.Content)
+\t}`}
+}`;
+        }
+
+        function generatePythonCode(ep, envKey, model, sys, user, temp, stream) {
+            return `import os
+import json
+import requests
+
+api_key = os.environ.get("${envKey}")
+if not api_key:
+    raise ValueError("يرجى تعيين متغير البيئة ${envKey}")
+
+url = "${ep}"
+headers = {
+    "Authorization": f"Bearer {api_key}",
+    "Content-Type": "application/json"
+}
+
+payload = {
+    "model": "${model}",
+    "messages": [
+        {"role": "system", "content": ${JSON.stringify(sys)}},
+        {"role": "user", "content": ${JSON.stringify(user)}}
+    ],
+    "temperature": ${temp},
+    "stream": ${stream ? 'True' : 'False'}
+}
+
+response = requests.post(url, headers=headers, json=payload, stream=${stream ? 'True' : 'False'}, timeout=60)
+response.raise_for_status()
+
+${stream ? `for line in response.iter_lines():
+    if line:
+        decoded = line.decode('utf-8')
+        if decoded.startswith("data: "):
+            content = decoded[6:]
+            if content.strip() == "[DONE]":
+                break
+            try:
+                chunk = json.loads(content)
+                delta = chunk["choices"][0]["delta"].get("content", "")
+                print(delta, end="", flush=True)
+            except Exception:
+                pass
+print()` : `result = response.json()
+print(result["choices"][0]["message"]["content"])`}`;
+        }
+
+        function generateNodeCode(ep, envKey, model, sys, user, temp, stream) {
+            return `import process from "node:process";
+
+const apiKey = process.env.${envKey};
+if (!apiKey) {
+  console.error("خطأ: يرجى تعيين متغير البيئة ${envKey}");
+  process.exit(1);
+}
+
+const response = await fetch("${ep}", {
+  method: "POST",
+  headers: {
+    "Authorization": \`Bearer \${apiKey}\`,
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    model: "${model}",
+    messages: [
+      { role: "system", content: ${JSON.stringify(sys)} },
+      { role: "user", content: ${JSON.stringify(user)} }
+    ],
+    temperature: ${temp},
+    stream: ${stream}
+  })
+});
+
+if (!response.ok) {
+  const err = await response.text();
+  console.error(\`HTTP \${response.status}: \${err}\`);
+  process.exit(1);
+}
+
+${stream ? `const reader = response.body.getReader();
+const decoder = new TextDecoder();
+let buffer = "";
+
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+  buffer += decoder.decode(value, { stream: true });
+  const lines = buffer.split("\\n");
+  buffer = lines.pop();
+  for (const line of lines) {
+    if (line.startsWith("data: ")) {
+      const data = line.slice(6).trim();
+      if (data === "[DONE]") process.exit(0);
+      try {
+        const json = JSON.parse(data);
+        const text = json.choices?.[0]?.delta?.content || "";
+        process.stdout.write(text);
+      } catch (_) {}
+    }
+  }
+}
+console.log();` : `const data = await response.json();
+console.log(data.choices[0].message.content);`}`;
+        }
+
+        function generateCurlCode(ep, envKey, model, sys, user, temp, stream) {
+            const bodyObj = {
+                model: model,
+                messages: [
+                    { role: "system", content: sys },
+                    { role: "user", content: user }
+                ],
+                temperature: temp,
+                stream: stream
+            };
+            const jsonStr = JSON.stringify(bodyObj, null, 2);
+            return `curl -X POST '${escapePosixSingleQuote(ep)}' \\
+  -H 'Authorization: Bearer '\${${envKey}}'' \\
+  -H 'Content-Type: application/json' \\
+  -d '${escapePosixSingleQuote(jsonStr)}'`;
+        }
+
+        function generateFailoverCode(lang, sys, user, temp) {
+            return `// موجه التبديل التلقائي الخماسي (v4.0 429 Failover Router)
+// السلسلة: NVIDIA NIM -> OpenCode Zen -> OpenRouter -> Groq -> LLM7.io
+
+import process from "node:process";
+
+const PROVIDERS = [
+  { name: "NVIDIA NIM",   url: "https://integrate.api.nvidia.com/v1/chat/completions", key: process.env.NVIDIA_API_KEY,   model: "z-ai/glm-5.3-flash" },
+  { name: "OpenCode Zen", url: "https://api.opencode.ai/v1/chat/completions",          key: process.env.OPENCODE_API_KEY, model: "GLM-5.3-Flash" },
+  { name: "OpenRouter",   url: "https://openrouter.ai/api/v1/chat/completions",        key: process.env.OPENROUTER_API_KEY, model: "nvidia/nemotron-3.5-super-vl:free" },
+  { name: "Groq",         url: "https://api.groq.com/openai/v1/chat/completions",      key: process.env.GROQ_API_KEY,     model: "allam-2-7b" },
+  { name: "LLM7.io",      url: "https://api.llm7.io/v1/chat/completions",              key: process.env.LLM7_API_KEY,     model: "DeepSeek V4 Pro" }
+];
+
+async function callWithFailover(systemPrompt, userPrompt) {
+  for (const prov of PROVIDERS) {
+    if (!prov.key) {
+      console.warn(\`تخطي \${prov.name}: المفتاح غير متوفر في متغيرات البيئة.\`);
+      continue;
+    }
+    console.log(\`محاولة الاتصال عبر: \${prov.name} (النموذج: \${prov.model})...\`);
+    try {
+      const resp = await fetch(prov.url, {
+        method: "POST",
+        headers: {
+          "Authorization": \`Bearer \${prov.key}\`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: prov.model,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt }
+          ],
+          temperature: ${temp}
+        })
+      });
+
+      if (resp.status === 429) {
+        const retryAfter = resp.headers.get("retry-after") || "غير محدد";
+        console.warn(\`⚠️ تم استنفاد الحد (HTTP 429) في \${prov.name}. Retry-After: \${retryAfter}s. التبديل إلى المزود التالي...\`);
+        continue; // التبديل التلقائي للمزود الاحتياطي
+      }
+
+      if (!resp.ok) {
+        console.error(\`فشل \${prov.name} بكود HTTP \${resp.status}. التبديل للمزود التالي...\`);
+        continue;
+      }
+
+      const json = await resp.json();
+      console.log(\`✅ نجح الاتصال بنجاح عبر \${prov.name}!\`);
+      return json.choices[0].message.content;
+    } catch (err) {
+      console.error(\`خطأ شبكة في \${prov.name}: \${err.message}. التبديل للمزود التالي...\`);
+    }
+  }
+  throw new Error("فشلت جميع المزودات الخمسة المتاحة.");
+}
+
+const answer = await callWithFailover(
+  ${JSON.stringify(sys)},
+  ${JSON.stringify(user)}
+);
+console.log("\\n--- الإجابة المستلمة ---\\n" + answer);`;
+        }
+
+        function copyGeneratedCode() {
+            copyToClipboard(document.getElementById('generatedCodeBlock').textContent, 'تم نسخ الكود البرمجي');
+        }
+
+        function downloadGeneratedCode() {
+            const extMap = { go: 'go', python: 'py', node: 'mjs', curl: 'sh' };
+            const ext = extMap[currentCodeLanguage] || 'txt';
+            const blob = new Blob([document.getElementById('generatedCodeBlock').textContent], { type: 'text/plain;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `llm_free_client.${ext}`;
+            a.click();
+            showToast(`تم تنزيل ملف llm_free_client.${ext}`);
+        }
+
+        function openFallbackCode() {
+            document.getElementById('cgPatternMode').value = 'failover_v4';
+            updateGeneratedCode();
+            showToast('تم تفعيل نمط موجه التبديل التلقائي الخماسي (429 Failover)');
+        }
+
+        // =========================================================
+        // TAB 4: PLAYGROUND / 429 SIMULATOR
+        // =========================================================
+        function initPlayground() {
+            const sel = document.getElementById('liveProviderSelect');
+            sel.innerHTML = '';
+            PROVIDERS_V4.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                opt.textContent = `${p.name} (${p.browserCors ? 'CORS مدعوم' : 'قد يحتاج Proxy'})`;
+                sel.appendChild(opt);
+            });
+            sel.value = 'groq';
+            onLiveProviderChange();
+        }
+
+        function setPlaygroundMode(mode) {
+            currentPlaygroundMode = mode;
+            const isSim = mode === 'failover_sim';
+            document.getElementById('failoverConfigPanel').classList.toggle('hidden', !isSim);
+            document.getElementById('liveConfigPanel').classList.toggle('hidden', isSim);
+
+            document.getElementById('pgmode-failover_sim').className = isSim
+                ? 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-emerald-500 text-slate-950 shadow flex items-center justify-center gap-2 transition-all'
+                : 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold text-slate-300 hover:text-white flex items-center justify-center gap-2 transition-all';
+
+            document.getElementById('pgmode-live').className = !isSim
+                ? 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold bg-emerald-500 text-slate-950 shadow flex items-center justify-center gap-2 transition-all'
+                : 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold text-slate-300 hover:text-white flex items-center justify-center gap-2 transition-all';
+
+            document.getElementById('pgRunBtnLabel').textContent = isSim
+                ? 'تشغيل محاكي التبديل التلقائي واختبار 429'
+                : 'إرسال طلب حي عبر المتصفح (Live BYOK Request)';
+        }
+
+        function onLiveProviderChange(preferredModel) {
+            const pid = document.getElementById('liveProviderSelect').value;
+            const p = getProviderById(pid);
+
+            document.getElementById('liveAccountIdGroup').classList.toggle('hidden', pid !== 'cloudflare-workers-ai');
+
+            const epInput = document.getElementById('liveEndpointInput');
+            epInput.value = p.baseUrl.endsWith('/chat/completions') ? p.baseUrl : p.baseUrl + '/chat/completions';
+
+            const mSel = document.getElementById('liveModelSelect');
+            mSel.innerHTML = '';
+            const models = getModelsForProvider(pid);
+            models.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.name;
+                opt.textContent = m.name;
+                mSel.appendChild(opt);
+            });
+            if (preferredModel) mSel.value = preferredModel;
+        }
+
+        function toggleApiKeyVisibility() {
+            const inp = document.getElementById('liveApiKeyInput');
+            const ico = document.getElementById('apiKeyEyeIcon');
+            if (inp.type === 'password') {
+                inp.type = 'text';
+                ico.className = 'fa-regular fa-eye-slash';
+            } else {
+                inp.type = 'password';
+                ico.className = 'fa-regular fa-eye';
+            }
+        }
+
+        async function executePlaygroundRequest() {
+            if (currentPlaygroundMode === 'failover_sim') {
+                await runFailoverSimulation();
+            } else {
+                await runLiveByokRequest();
+            }
+        }
+
+        async function runFailoverSimulation() {
+            const scenario = document.getElementById('simScenarioSelect').value;
+            const userPrompt = document.getElementById('pgUserPrompt').value;
+            const outEl = document.getElementById('pgFormattedOutput');
+            const rawEl = document.getElementById('pgRawJsonCode');
+            const loading = document.getElementById('pgLoading');
+
+            loading.classList.remove('hidden');
+            outEl.innerHTML = '';
+
+            await new Promise(r => setTimeout(r, 600));
+            loading.classList.add('hidden');
+
+            document.getElementById('pgStatusBadge').className = 'px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono text-xs';
+            document.getElementById('pgStatusBadge').textContent = '429 Rate Limited → Failover OK';
+            document.getElementById('pgLatencyBadge').textContent = '412 ms';
+            document.getElementById('pgTokensBadge').textContent = '285 tok';
+
+            document.getElementById('hdrRemReq').textContent = '0 (NVIDIA NIM)';
+            document.getElementById('hdrRemTok').textContent = '0';
+            document.getElementById('hdrRetryAfter').textContent = '15s';
+
+            let responsePayload = {};
+            if (scenario === 'v4_failover') {
+                responsePayload = {
+                    simulated_flow: [
+                        { step: 1, provider: "NVIDIA NIM", model: "z-ai/glm-5.3-flash", status: 429, error: "Rate limit reached (40 RPM limit exhausted).", retry_after: "15s" },
+                        { step: 2, provider: "OpenCode Zen", model: "GLM-5.3-Flash", status: 200, message: "نجاح الاتصال الفوري عبر المزود الاحتياطي!" }
+                    ],
+                    choices: [{
+                        message: {
+                            role: "assistant",
+                            content: `تم استلام طلبك بنجاح عبر OpenCode Zen بعد تجاوز حد NVIDIA NIM تلقائياً!\n\nنص الرد البرمجي المطلوب:\n\`\`\`go\npackage main\nimport (\n\t"fmt"\n\t"sync"\n\t"time"\n)\n\nfunc worker(id int, wg *sync.WaitGroup) {\n\tdefer wg.Done()\n\tfmt.Printf("تشغيل Goroutine رقم %d\\n", id)\n\ttime.Sleep(50 * time.Millisecond)\n}\n\nfunc main() {\n\tvar wg sync.WaitGroup\n\tfor i := 1; i <= 3; i++ {\n\twg.Add(1)\n\t\tgo worker(i, &wg)\n\t}\n\twg.Wait()\n\tfmt.Println("اكتملت جميع العمليات المتزامنة!")\n}\n\`\`\``
+                        }
+                    }]
+                };
+            } else if (scenario === 'double_failover') {
+                responsePayload = {
+                    simulated_flow: [
+                        { step: 1, provider: "Groq", model: "allam-2-7b", status: 429, error: "RPM limit reached (30 RPM)." },
+                        { step: 2, provider: "OpenRouter", model: "nemotron-3-ultra", status: 429, error: "Daily credit exhaustion (50 RPD)." },
+                        { step: 3, provider: "Cohere", model: "Command R7B Arabic", status: 200, message: "تمت المعالجة بنجاح عبر Cohere Trial Endpoint." }
+                    ],
+                    choices: [{
+                        message: {
+                            role: "assistant",
+                            content: "تم تبديل المسار تلقائياً مرتين ونجحت العملية عبر Cohere!"
+                        }
+                    }]
+                };
+            } else {
+                responsePayload = {
+                    error: {
+                        message: "Rate limit reached for model `allam-2-7b` on Groq. Current limit: 30 RPM, 8,000 TPM.",
+                        type: "tokens_per_minute_exhausted",
+                        code: 429
+                    },
+                    headers: {
+                        "x-ratelimit-limit-requests": "30",
+                        "x-ratelimit-remaining-requests": "0",
+                        "x-ratelimit-reset-requests": "2.4s",
+                        "retry-after": "3"
+                    }
+                };
+            }
+
+            lastPlaygroundRawText = JSON.stringify(responsePayload, null, 2);
+            rawEl.textContent = lastPlaygroundRawText;
+
+            // Render Formatted
+            const logBox = document.createElement('div');
+            logBox.className = 'p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-2';
+            logBox.innerHTML = `
+                <div class="text-xs font-bold text-amber-300 flex items-center gap-2">
+                    <i class="fa-solid fa-code-branch"></i>
+                    <span>سجل أحداث المحاكاة والتبديل التلقائي:</span>
+                </div>
+                ${(responsePayload.simulated_flow || []).map(s => `
+                    <div class="text-xs font-mono flex items-center justify-between p-2 rounded ${s.status === 200 ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-300 border border-rose-500/20'}">
+                        <span>خطوة ${s.step}: ${s.provider} (${s.model})</span>
+                        <strong>HTTP ${s.status} ${s.status === 200 ? '✓' : '✗ 429'}</strong>
+                    </div>
+                `).join('')}
+            `;
+            outEl.appendChild(logBox);
+
+            if (responsePayload.choices?.[0]?.message?.content) {
+                const ansBox = document.createElement('div');
+                ansBox.className = 'p-4 rounded-xl bg-slate-900/90 border border-emerald-500/30 text-white space-y-2 whitespace-pre-wrap leading-relaxed';
+                ansBox.textContent = responsePayload.choices[0].message.content;
+                outEl.appendChild(ansBox);
+            }
+        }
+
+        async function runLiveByokRequest() {
+            const pid = document.getElementById('liveProviderSelect').value;
+            const p = getProviderById(pid);
+            let ep = document.getElementById('liveEndpointInput').value.trim();
+            const apiKey = document.getElementById('liveApiKeyInput').value.trim();
+            const model = document.getElementById('liveModelSelect').value;
+            const sys = document.getElementById('pgSystemPrompt').value;
+            const user = document.getElementById('pgUserPrompt').value;
+            const temp = parseFloat(document.getElementById('pgTemp').value);
+
+            if (!ep.startsWith('https://')) {
+                showToast('خطأ: رابط نقطة النهاية يجب أن يبدأ بـ https:// حصراً', 'error');
+                return;
+            }
+
+            if (!apiKey) {
+                showToast('يرجى إدخال مفتاح الـ API الخاص بك أو التبديل لنمط المحاكي (بدون مفتاح)', 'error');
+                return;
+            }
+
+            if (pid === 'cloudflare-workers-ai') {
+                const acct = document.getElementById('liveAccountIdInput').value.trim();
+                if (!/^[a-f0-9]{32}$/i.test(acct)) {
+                    showToast('خطأ: معرّف حساب Cloudflare يجب أن يتكون من 32 رمزاً سداسي عشري (32 hex characters)', 'error');
+                    return;
+                }
+                ep = ep.replace('{ACCOUNT_ID}', acct);
+            }
+
+            const loading = document.getElementById('pgLoading');
+            const outEl = document.getElementById('pgFormattedOutput');
+            const rawEl = document.getElementById('pgRawJsonCode');
+            loading.classList.remove('hidden');
+            outEl.innerHTML = '';
+
+            const startTime = performance.now();
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 45000);
+
+            try {
+                const resp = await fetch(ep, {
+                    method: 'POST',
+                    signal: controller.signal,
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: [
+                            { role: 'system', content: sys },
+                            { role: 'user', content: user }
+                        ],
+                        temperature: temp
+                    })
+                });
+
+                clearTimeout(timeoutId);
+                const latency = Math.round(performance.now() - startTime);
+                document.getElementById('pgLatencyBadge').textContent = `${latency} ms`;
+
+                // Rate limit headers
+                document.getElementById('hdrRemReq').textContent = resp.headers.get('x-ratelimit-remaining-requests') || 'N/A';
+                document.getElementById('hdrRemTok').textContent = resp.headers.get('x-ratelimit-remaining-tokens') || 'N/A';
+                document.getElementById('hdrRetryAfter').textContent = resp.headers.get('retry-after') || 'N/A';
+
+                const rawText = await resp.text();
+                lastPlaygroundRawText = rawText;
+                rawEl.textContent = rawText;
+
+                document.getElementById('pgStatusBadge').className = resp.ok
+                    ? 'px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono text-xs'
+                    : 'px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-mono text-xs';
+                document.getElementById('pgStatusBadge').textContent = `HTTP ${resp.status}`;
+
+                let parsed;
+                try {
+                    parsed = JSON.parse(rawText);
+                } catch (_) {}
+
+                if (resp.ok && parsed?.choices?.[0]?.message?.content) {
+                    const ans = document.createElement('div');
+                    ans.className = 'p-4 rounded-xl bg-slate-900/90 border border-emerald-500/30 text-white whitespace-pre-wrap leading-relaxed';
+                    ans.textContent = parsed.choices[0].message.content;
+                    outEl.appendChild(ans);
+
+                    const tokUsage = parsed.usage ? `${parsed.usage.total_tokens || parsed.usage.completion_tokens} tok` : 'N/A';
+                    document.getElementById('pgTokensBadge').textContent = tokUsage;
+                    showToast('تم استلام الرد بنجاح!', 'success');
+                } else {
+                    const errDiv = document.createElement('div');
+                    errDiv.className = 'p-4 rounded-xl bg-rose-950/40 border border-rose-500/40 text-rose-200 text-xs font-mono space-y-2';
+                    errDiv.innerHTML = `
+                        <div class="font-bold flex items-center gap-2 text-rose-300">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <span>خطأ في الاستجابة (HTTP ${resp.status})</span>
+                        </div>
+                        <div class="whitespace-pre-wrap">${escapeHtml(rawText)}</div>
+                    `;
+                    outEl.appendChild(errDiv);
+                    showToast(`فشل الطلب: HTTP ${resp.status}`, 'error');
+                }
+            } catch (err) {
+                clearTimeout(timeoutId);
+                const latency = Math.round(performance.now() - startTime);
+                document.getElementById('pgLatencyBadge').textContent = `${latency} ms`;
+                document.getElementById('pgStatusBadge').className = 'px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-mono text-xs';
+                document.getElementById('pgStatusBadge').textContent = 'Network / CORS Error';
+
+                const errDiv = document.createElement('div');
+                errDiv.className = 'p-4 rounded-xl bg-rose-950/40 border border-rose-500/40 text-rose-200 text-xs space-y-2';
+                errDiv.innerHTML = `
+                    <div class="font-bold text-rose-300 flex items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span>تعذر إتمام طلب المتصفح المباشر: ${escapeHtml(err.message)}</span>
+                    </div>
+                    <p class="text-slate-300 leading-relaxed">
+                        قد يرجع ذلك لسياسة <strong>CORS</strong> الخاصة بالمزود، حيث تمنع بعض الواجهات الاستدعاء المباشر من المتصفح لحماية مفاتيح API وتتطلب استدعاءها من خادم خلفي (Backend Proxy / Node / Python). جرب مزوداً يدعم CORS مثل Groq أو استخدم كود التوليد في التبويب 3.
+                    </p>
+                `;
+                outEl.appendChild(errDiv);
+                showToast('تعذر الاتصال (فحص CORS أو الشبكة)', 'error');
+            } finally {
+                loading.classList.add('hidden');
+            }
+        }
+
+        function setResponseView(view) {
+            const isFormatted = view === 'formatted';
+            document.getElementById('pgFormattedOutput').classList.toggle('hidden', !isFormatted);
+            document.getElementById('pgRawOutputContainer').classList.toggle('hidden', isFormatted);
+
+            document.getElementById('resp-formatted-btn').className = isFormatted
+                ? 'px-3 py-1 rounded-lg text-xs font-bold bg-emerald-500 text-slate-950'
+                : 'px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white';
+
+            document.getElementById('resp-raw-btn').className = !isFormatted
+                ? 'px-3 py-1 rounded-lg text-xs font-bold bg-emerald-500 text-slate-950'
+                : 'px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white font-mono';
+        }
+
+        function copyPlaygroundResponse() {
+            copyToClipboard(lastPlaygroundRawText, 'تم نسخ محتوى الاستجابة');
+        }
+
+        // =========================================================
+        // TAB 5: TOKEN CALCULATOR & RETIRED REGISTRY
+        // =========================================================
+        function loadSampleCalcText() {
+            document.getElementById('calcInputText').value = `def quicksort(arr):
+    if len(arr) <= 1:
+        return arr
+    pivot = arr[len(arr) // 2]
+    left = [x for x in arr if x < pivot]
+    middle = [x for x in arr if x == pivot]
+    right = [x for x in arr if x > pivot]
+    return quicksort(left) + middle + quicksort(right)
+
+# خوارزمية الترتيب السريع باللغة العربية لشرح التعقيد الزمني O(N log N)`;
+            calculateTokensAndLimits();
+        }
+
+        function calculateTokensAndLimits() {
+            const text = document.getElementById('calcInputText').value || '';
+
+            let arabicChars = 0;
+            let latinChars = 0;
+            for (let i = 0; i < text.length; i++) {
+                const code = text.charCodeAt(i);
+                if (code >= 0x0600 && code <= 0x06FF) arabicChars++;
+                else if ((code >= 65 && code <= 90) || (code >= 97 && code <= 122)) latinChars++;
+            }
+
+            const words = text.trim() ? text.trim().split(/\\s+/).length : 0;
+            // Arabic words are typically ~1.5 - 2 tokens per word due to subword tokenization
+            const estimatedTokens = Math.round((arabicChars * 0.75) + (latinChars * 0.28) + 1);
+
+            document.getElementById('statTotalTokens').textContent = fmt(estimatedTokens);
+            document.getElementById('statArabicChars').textContent = fmt(arabicChars);
+            document.getElementById('statLatinChars').textContent = fmt(latinChars);
+            document.getElementById('statWordCount').textContent = fmt(words);
+
+            const outTokens = parseInt(document.getElementById('simOutputTokens').value, 10);
+            document.getElementById('simOutputTokensVal').textContent = `${outTokens} توكن`;
+
+            const rpm = parseInt(document.getElementById('simRpm').value, 10);
+            document.getElementById('simRpmVal').textContent = `${rpm} طلب/دقيقة`;
+
+            const rpd = parseInt(document.getElementById('simRpd').value, 10);
+            document.getElementById('simRpdVal').textContent = `${rpd} طلب/يوم`;
+
+            const isOpPaid = document.getElementById('simOpenRouterPaid').checked;
+
+            const tpm = (estimatedTokens + outTokens) * rpm;
+            const tpd = (estimatedTokens + outTokens) * rpd;
+            const monthlyReq = rpd * 30;
+
+            document.getElementById('simCalculatedTpm').textContent = `${fmt(tpm)} TPM`;
+            document.getElementById('simCalculatedTpd').textContent = `${fmt(tpd)} TPD`;
+            document.getElementById('simCalculatedMonthly').textContent = `${fmt(monthlyReq)} طلب/شهر`;
+
+            renderLimitMatrix(rpm, rpd, tpm, tpd, isOpPaid);
+        }
+
+        function renderLimitMatrix(userRpm, userRpd, userTpm, userTpd, isOpPaid) {
+            const container = document.getElementById('limitMatrixContainer');
+            container.innerHTML = '';
+
+            PROVIDERS_V4.forEach(p => {
+                let status = 'compatible';
+                let reason = 'ضمن الحدود المجانية المعلنة';
+
+                const effRpd = (p.id === 'openrouter' && isOpPaid) ? (p.rpdPaid || 1000) : p.rpd;
+
+                if (p.rpm && userRpm > p.rpm) {
+                    status = 'exceeded';
+                    reason = `يتجاوز حد الدقيقة (${userRpm} > ${p.rpm} RPM)`;
+                } else if (effRpd && userRpd > effRpd) {
+                    status = 'exceeded';
+                    reason = `يتجاوز حد اليوم (${userRpd} > ${effRpd} RPD)`;
+                } else if (p.tpm && userTpm > p.tpm) {
+                    status = 'exceeded';
+                    reason = `يتجاوز حد التوكنات بالدقيقة (${fmt(userTpm)} > ${fmt(p.tpm)} TPM)`;
+                } else if (p.rpmonth && (userRpd * 30) > p.rpmonth) {
+                    status = 'exceeded';
+                    reason = `يتجاوز الحصة الشهرية (${fmt(userRpd * 30)} > ${fmt(p.rpmonth)} طلب/شهر)`;
+                } else if (p.rpm && userRpm >= p.rpm * 0.8) {
+                    status = 'warning';
+                    reason = `قريب جداً من حد الدقيقة (${userRpm} RPM)`;
+                }
+
+                const badge = status === 'compatible'
+                    ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">متوافق ✓</span>'
+                    : status === 'warning'
+                    ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">تحذير !</span>'
+                    : '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30">يتجاوز الحد ✗</span>';
+
+                const row = document.createElement('div');
+                row.className = 'p-3 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-between gap-3 text-xs';
+                row.innerHTML = `
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2">
+                            <strong class="text-white">${escapeHtml(p.name)}</strong>
+                            <span class="text-[11px] font-mono text-slate-400" dir="ltr">${escapeHtml(p.limitsText)}</span>
+                        </div>
+                        <div class="text-[11px] text-slate-400 truncate mt-0.5">${escapeHtml(reason)}</div>
+                    </div>
+                    <div class="shrink-0">${badge}</div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function renderRetiredModelsTable() {
+            const tbody = document.getElementById('retiredModelsTableBody');
+            tbody.innerHTML = '';
+            RETIRED_ITEMS_V4.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-900/60 transition-colors';
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-bold text-white">${escapeHtml(item.provider)}</td>
+                    <td class="py-3 px-4 font-mono text-rose-300" dir="ltr">${escapeHtml(item.item)}</td>
+                    <td class="py-3 px-4 text-slate-300">${escapeHtml(item.status)}</td>
+                    <td class="py-3 px-4 font-mono text-emerald-400" dir="ltr">${escapeHtml(item.replacement)}</td>
+                    <td class="py-3 px-4">
+                        <a href="${escapeHtml(item.source)}" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:underline flex items-center gap-1">
+                            <span>التوثيق</span>
+                            <i class="fa-solid fa-arrow-up-left-from-square text-[10px]"></i>
+                        </a>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function getFullUnifiedDataset() {
+            return {
+                schema_version: "4.0.0-audited-freellm-freellm",
+                extracted_at: EXTRACTED_AT,
+                verified_at: VERIFIED_AT,
+                stats: STATS_V4,
+                providers: PROVIDERS_V4,
+                models: MODELS_V4,
+                retired_registry: RETIRED_ITEMS_V4
+            };
+        }
+
+        function copyRegistryJson() {
+            copyToClipboard(JSON.stringify(getFullUnifiedDataset(), null, 2), 'تم نسخ JSON الكامل إلى الحافظة');
+        }
+
+        function downloadV4Json() {
+            const blob = new Blob([JSON.stringify(getFullUnifiedDataset(), null, 2)], { type: 'application/json;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = "freellm-v4-audited.json";
+            a.click();
+            showToast('تم تنزيل ملف freellm-v4-audited.json بنجاح');
+        }
+
+        // =========================================================
+        // DOM INITIALIZATION
+        // =========================================================
+        window.addEventListener('DOMContentLoaded', () => {
+            initModelCatalogFilters();
+            renderV4Models();
+            renderProvidersDirectory();
+            initCodegen();
+            initPlayground();
+            calculateTokensAndLimits();
+            renderRetiredModelsTable();
+
+            // Populate JSON block
+            const jsonBlock = document.getElementById('auditRegistryJsonBlock');
+            if (jsonBlock) {
+                jsonBlock.textContent = JSON.stringify(getFullUnifiedDataset(), null, 2);
+            }
+        });
+    </script>
+</body>
+</html>
