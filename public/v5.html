@@ -35,6 +35,14 @@
     </script>
 
     <style>
+        :root {
+            --card-radius: 1rem;
+            --card-gap: 1rem;
+            --card-surface: rgba(15, 23, 42, 0.85);
+            --card-border: rgba(51, 65, 85, 0.65);
+            --card-border-hover: rgba(16, 185, 129, 0.45);
+            --card-focus: #34d399;
+        }
         body {
             font-family: 'Cairo', sans-serif;
             background-color: #050811;
@@ -59,12 +67,35 @@
             background: #10b981;
         }
         .glass-card {
-            background: rgba(15, 23, 42, 0.85);
+            background: var(--card-surface, rgba(15, 23, 42, 0.85));
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(51, 65, 85, 0.65);
+            border: 1px solid var(--card-border, rgba(51, 65, 85, 0.65));
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
         }
-        .glass-card:hover {
-            border-color: rgba(16, 185, 129, 0.45);
+        .glass-card-interactive,
+        .glass-card[role="button"],
+        button.glass-card,
+        a.glass-card {
+            cursor: pointer;
+        }
+        .glass-card-interactive:hover,
+        .glass-card[role="button"]:hover,
+        button.glass-card:hover,
+        a.glass-card:hover {
+            border-color: var(--card-border-hover, rgba(16, 185, 129, 0.45));
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+        }
+        :focus-visible {
+            outline: 2px solid var(--card-focus, #34d399) !important;
+            outline-offset: 2px !important;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, ::before, ::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
         }
         .grid-bg {
             background-image: radial-gradient(rgba(16, 185, 129, 0.09) 1px, transparent 1px);
@@ -118,13 +149,13 @@
         .input:focus {
             border-color: #10b981;
         }
-        [aria-pressed="true"] {
+        :is(.btn, [data-view], [data-modality], [data-pfilter], [data-cgmode], [data-lang], [data-pgmode], [data-respview], [data-tab])[aria-pressed="true"] {
             background-color: #10b981 !important;
             color: #050811 !important;
             border-color: transparent !important;
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
         }
-            [hidden] { display: none !important; }
+        [hidden] { display: none !important; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col grid-bg selection:bg-emerald-500 selection:text-slate-950">
@@ -146,7 +177,7 @@
                             <h1 class="text-base sm:text-xl font-extrabold bg-gradient-to-l from-white via-slate-100 to-emerald-400 bg-clip-text text-transparent">
                                 بوابة واجهات LLM المجانية — الإصدار الخامس الموحد
                             </h1>
-                            <span class="hidden sm:inline-block text-[11px] font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">
+                            <span class="hidden sm:inline-block text-xs font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">
                                 v5.0 AUDITED · FREELLM
                             </span>
                         </div>
@@ -200,9 +231,9 @@
                         <i class="fa-solid fa-trophy text-amber-400"></i>
                         <span>شريط أفضل الاختيارات الموحد (Best Picks — Benchmarks &amp; Modalities)</span>
                     </h3>
-                    <span class="text-[11px] text-slate-400">انقر على أي بطاقة لتوليد الكود أو الفحص</span>
+                    <span class="text-xs text-slate-400">انقر على أي بطاقة لتوليد الكود أو الفحص</span>
                 </div>
-                <div id="picksGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5"></div>
+                <div id="picksGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
             </div>
 
             <!-- Search & Advanced Filters Bar -->
@@ -233,7 +264,7 @@
 
                         <label class="inline-flex items-center gap-1.5 bg-slate-950 border border-slate-800 px-3 py-2 rounded-xl text-xs font-bold text-slate-300 cursor-pointer hover:border-emerald-500/40">
                             <input type="checkbox" id="catVerified" class="accent-emerald-500 rounded">
-                            <i class="fa-solid fa-circle-check text-emerald-400 text-[11px]"></i>
+                            <i class="fa-solid fa-circle-check text-emerald-400 text-xs"></i>
                             <span>الموثق فقط</span>
                         </label>
 
@@ -281,7 +312,7 @@
             <div id="catGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
 
             <!-- Models Table Container -->
-            <div id="catTable" class="hidden glass-card rounded-2xl overflow-hidden border border-slate-800">
+            <div id="catTable" class="hidden glass-card rounded-2xl overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-right text-xs sm:text-sm">
                         <thead class="bg-slate-900/95 text-slate-300 border-b border-slate-800 text-xs">
@@ -316,7 +347,7 @@
                     <div>
                         <div class="flex items-center gap-2 flex-wrap">
                             <h3 class="text-sm font-bold text-amber-300">إشعار رسمي: إغلاق GitHub Models نهائياً</h3>
-                            <span class="px-2 py-0.5 rounded text-[10px] code bg-amber-500/20 text-amber-300">RETIRED: 2026-07-30</span>
+                            <span class="px-2.5 py-0.5 rounded text-xs code bg-amber-500/20 text-amber-300" dir="ltr">RETIRED: 2026-07-30</span>
                         </div>
                         <p class="text-xs text-slate-300 mt-1 leading-relaxed">
                             أُغلقت منصة <strong>GitHub Models</strong> نهائياً في 30 يوليو 2026، وتم استبعادها من قائمة المزودين النشطين مع توفير بدائل فورية.
@@ -331,7 +362,7 @@
                     <div>
                         <div class="flex items-center gap-2 flex-wrap">
                             <h3 class="text-sm font-bold text-cyan-300">ملاحظة تدقيق حول حدود OpenRouter</h3>
-                            <span class="px-2 py-0.5 rounded text-[10px] code bg-cyan-500/20 text-cyan-300">DISCREPANCY NOTE</span>
+                            <span class="px-2.5 py-0.5 rounded text-xs code bg-cyan-500/20 text-cyan-300" dir="ltr">DISCREPANCY NOTE</span>
                         </div>
                         <p class="text-xs text-slate-300 mt-1 leading-relaxed">
                             التوثيق الرسمي لـ OpenRouter ينص على <strong>50 RPD</strong> للحسابات المجانية و<strong>1,000 RPD</strong> بعد إيداع 10 credits، بينما يظهر في بعض المصادر 200 req/day.
@@ -361,7 +392,7 @@
             </div>
 
             <!-- Providers Grid -->
-            <div id="provGrid" class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>
+            <div id="provGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </section>
 
         <!-- =================================================================
@@ -426,7 +457,7 @@
                                 <span class="text-xs text-slate-300">البث الحي:</span>
                                 <label class="inline-flex items-center gap-1.5 cursor-pointer">
                                     <input type="checkbox" id="cgStream" class="accent-emerald-500 rounded">
-                                    <span class="text-[11px] code text-slate-400">stream</span>
+                                    <span class="text-xs code text-slate-400">stream</span>
                                 </label>
                             </div>
                         </div>
@@ -436,7 +467,7 @@
                 </div>
 
                 <!-- Right Code Viewer (8 cols) -->
-                <div class="lg:col-span-8 flex flex-col glass-card rounded-2xl overflow-hidden border border-slate-800">
+                <div class="lg:col-span-8 flex flex-col glass-card rounded-2xl overflow-hidden">
                     <div class="bg-slate-900/95 border-b border-slate-800 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
                         <div class="flex flex-wrap items-center gap-1.5">
                             <button data-lang="go" class="btn bg-slate-950 text-slate-300 border border-slate-800"><i class="fa-brands fa-golang text-base"></i><span>Go</span></button>
@@ -472,10 +503,10 @@
                     </div>
 
                     <div class="bg-slate-900/90 border-t border-slate-800 px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-slate-400">
-                        <div id="cgHint" class="code text-[11px] text-slate-300" dir="ltr"></div>
+                        <div id="cgHint" class="code text-xs text-slate-300" dir="ltr"></div>
                         <a id="cgLink" href="https://freellm.net" target="_blank" rel="noopener noreferrer" class="text-emerald-400 hover:underline font-bold flex items-center gap-1">
                             <span>صفحة المزود والتوثيق الرسمي</span>
-                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
                         </a>
                     </div>
                 </div>
@@ -514,7 +545,7 @@
                                 <i class="fa-solid fa-rotate text-emerald-400"></i>
                                 <span>محاكي التبديل التلقائي واستنفاد الحدود</span>
                             </h3>
-                            <span class="chip code bg-emerald-500/15 text-emerald-300 text-[10px]">NO KEY NEEDED</span>
+                            <span class="chip code bg-emerald-500/15 text-emerald-300 text-xs" dir="ltr">NO KEY NEEDED</span>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-300 mb-1.5">سيناريو المحاكاة:</label>
@@ -584,7 +615,7 @@
                 </div>
 
                 <!-- Right Output (7 cols) -->
-                <div class="lg:col-span-7 flex flex-col glass-card rounded-2xl overflow-hidden border border-slate-800 min-h-[500px]">
+                <div class="lg:col-span-7 flex flex-col glass-card rounded-2xl overflow-hidden min-h-[500px]">
                     <div class="bg-slate-900/95 border-b border-slate-800 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
                         <div class="flex flex-wrap items-center gap-3">
                             <span id="pgStatus" class="chip code bg-slate-800 text-slate-300">جاهز</span>
@@ -606,7 +637,7 @@
                         </div>
                     </div>
 
-                    <div id="pgHeadersBar" class="bg-slate-950/90 border-b border-slate-800/80 px-4 py-2 text-[11px] code text-slate-400 flex flex-wrap items-center gap-4" dir="ltr">
+                    <div id="pgHeadersBar" class="bg-slate-950/90 border-b border-slate-800/80 px-4 py-2 text-xs code text-slate-400 flex flex-wrap items-center gap-4" dir="ltr">
                         <span>rem-requests: <strong id="hReq" class="text-emerald-400">—</strong></span>
                         <span>rem-tokens: <strong id="hTok" class="text-cyan-400">—</strong></span>
                         <span>retry-after: <strong id="hRetry" class="text-amber-400">—</strong></span>
@@ -745,7 +776,7 @@
 
     <!-- Footer -->
     <footer class="border-t border-slate-800/80 bg-slate-950 py-6 mt-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
             <div class="flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
                 <span>بوابة واجهات LLM المجانية — الإصدار الخامس الموحد (v5.0 — 2026-11-02)</span>
@@ -1881,10 +1912,10 @@ console.log(data.choices?.[0]?.message?.content);`}`;
     function renderCalc() {
       const s = state.calc, e = estimateTokens(s.text);
       $("#calcOutOut").textContent = fmt(s.out); $("#calcRpmOut").textContent = s.rpm; $("#calcRpdOut").textContent = fmt(s.rpd);
-      const stat = (l, v, c) => el("div", { class: "rounded-xl border border-slate-800 bg-slate-950 p-2.5 text-center" }, el("dt", { class: "text-[11px] text-slate-400", text: l }), el("dd", { class: `code mt-0.5 text-lg font-extrabold ${c}`, text: fmt(v) }));
+      const stat = (l, v, c) => el("div", { class: "rounded-xl border border-slate-800 bg-slate-950 p-2.5 text-center" }, el("dt", { class: "text-xs text-slate-400", text: l }), el("dd", { class: `code mt-0.5 text-lg font-extrabold ${c}`, text: fmt(v) }));
       $("#calcStats").replaceChildren(stat("توكن الإدخال", e.tokens, "text-emerald-400"), stat("أحرف عربية", e.ar, "text-cyan-400"), stat("أحرف لاتينية", e.lat, "text-purple-400"), stat("كلمات", e.words, "text-white"));
       const per = e.tokens + s.out, tpm = per * s.rpm, tpd = per * s.rpd, rph = Math.min(s.rpm * 60, s.rpd);
-      const tot = (l, v, c) => el("div", {}, el("dt", { class: "text-[10px] text-slate-400", text: l }), el("dd", { class: `code text-xs font-extrabold ${c}`, text: v }));
+      const tot = (l, v, c) => el("div", {}, el("dt", { class: "text-xs text-slate-400", text: l }), el("dd", { class: `code text-xs font-extrabold ${c}`, text: v }));
       $("#calcTotals").replaceChildren(tot("TPM", fmtBig(tpm), "text-emerald-400"), tot("TPD", fmtBig(tpd), "text-amber-400"), tot("طلب/شهر", fmt(s.rpd * 30), "text-cyan-400"));
 
       const rows = PROVIDERS.map(p => {
@@ -1902,7 +1933,7 @@ console.log(data.choices?.[0]?.message?.content);`}`;
         el("div", { class: "flex items-center justify-between gap-2" }, el("span", { class: "text-sm font-bold text-white", text: p.name }), el("span", { class: `chip ${meta[st][1]}`, text: meta[st][2] })),
         checks.length
           ? el("div", { class: "mt-1.5 flex flex-wrap gap-1.5", dir: "ltr" }, checks.map(c => el("span", { class: `chip code ${c.ok ? "bg-emerald-500/10 text-emerald-300" : "bg-rose-500/15 text-rose-300"}`, text: `${c.label} ${fmtBig(c.need)}/${fmtBig(c.limit)}` })))
-          : el("div", { class: "mt-1 text-[11px] text-slate-400", text: p.limitsText }))));
+          : el("div", { class: "mt-1 text-xs text-slate-400", text: p.limitsText }))));
     }
 
     /* =====================================================================
@@ -1914,7 +1945,7 @@ console.log(data.choices?.[0]?.message?.content);`}`;
         el("td", { class: "code px-4 py-3 text-rose-300", dir: "ltr", text: r.item }),
         el("td", { class: "px-4 py-3 text-amber-300", text: r.status }),
         el("td", { class: "px-4 py-3 text-emerald-300", text: r.replacement }),
-        el("td", { class: "px-4 py-3" }, el("a", { href: r.source, target: "_blank", rel: "noopener noreferrer", class: "text-cyan-400 hover:underline" }, "المصدر ", icon("fa-solid fa-arrow-up-right-from-square text-[10px]"))))));
+        el("td", { class: "px-4 py-3" }, el("a", { href: r.source, target: "_blank", rel: "noopener noreferrer", class: "text-cyan-400 hover:underline" }, "المصدر ", icon("fa-solid fa-arrow-up-right-from-square text-xs"))))));
     }
     const exportJson = () => JSON.stringify({ schema_version: "5.0.0", dataAsOf: DATA_AS_OF, sourceStats: SOURCE_STATS,
       counts: { providers: PROVIDERS.length, models: MODELS.length }, providers: PROVIDERS, models: MODELS, retired: RETIRED, warnings: DATA_WARNINGS }, null, 2);
@@ -1966,11 +1997,15 @@ console.log(data.choices?.[0]?.message?.content);`}`;
         { num: SOURCE_STATS.noCreditCard, label: "نماذج بدون بطاقة ائتمان", sub: "noCreditCard", col: "text-purple-400", tab: "directory" }
       ];
       $("#heroStatsGrid").replaceChildren(...items.map(it => el("div", {
-        class: "cursor-pointer p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-emerald-500/50 transition-all",
-        onclick: () => showTab(it.tab)
+        class: "glass-card-interactive p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-emerald-500/50 transition-all",
+        role: "button",
+        tabindex: "0",
+        "aria-label": `${it.label}: ${fmt(it.num)} - الانتقال إلى تبويب ${it.tab}`,
+        onclick: () => showTab(it.tab),
+        onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); showTab(it.tab); } }
       }, el("div", { class: `text-2xl code font-extrabold ${it.col}`, dir: "ltr", text: fmt(it.num) }),
          el("div", { class: "text-xs font-bold text-white mt-0.5", text: it.label }),
-         el("div", { class: "text-[11px] text-slate-400 code", text: it.sub }))));
+         el("div", { class: "text-xs text-slate-400 code", text: it.sub }))));
     }
 
     function renderPicks() {
@@ -1984,15 +2019,19 @@ console.log(data.choices?.[0]?.message?.content);`}`;
       ];
 
       $("#picksGrid").replaceChildren(...picks.map(p => el("div", {
-        class: `cursor-pointer glass-card rounded-2xl p-4 border-r-4 ${p.border} flex flex-col justify-between gap-2`,
-        onclick: () => openCodegen(p.pid, p.model)
+        class: `glass-card glass-card-interactive rounded-2xl p-4 border-r-4 ${p.border} flex flex-col justify-between gap-2`,
+        role: "button",
+        tabindex: "0",
+        "aria-label": `${p.label} - ${p.model} - توليد الكود`,
+        onclick: () => openCodegen(p.pid, p.model),
+        onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openCodegen(p.pid, p.model); } }
       }, el("div", { class: "flex items-center justify-between" },
-           el("span", { class: `text-[11px] font-bold ${p.textCol}`, text: p.label }),
-           el("span", { class: "code text-[11px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-bold", text: p.ctx })),
+           el("span", { class: `text-xs font-bold ${p.textCol}`, text: p.label }),
+           el("span", { class: "code text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-bold", text: p.ctx })),
          el("div", { class: "flex items-center justify-between" },
            el("div", { class: "code font-bold text-white text-sm", dir: "ltr", text: p.model }),
            el("span", { class: "text-xs code text-amber-300 font-bold", text: `Score ${p.score}` })),
-         el("div", { class: "text-[11px] text-slate-400 pt-1 border-t border-slate-800/80", text: p.sub }))));
+         el("div", { class: "text-xs text-slate-400 pt-1 border-t border-slate-800/80", text: p.sub }))));
     }
 
     function renderCatalog() {
@@ -2031,7 +2070,7 @@ console.log(data.choices?.[0]?.message?.content);`}`;
       if (filtered.length === 0) {
         $("#catGrid").replaceChildren(
           el("div", { class: "col-span-full py-16 text-center glass-card rounded-2xl border border-slate-800" },
-            icon("fa-solid fa-filter-circle-xmark text-4xl text-slate-500 mb-3"),
+            icon("fa-solid fa-filter-circle-xmark text-4xl text-slate-400 mb-3"),
             el("div", { class: "text-base font-bold text-white mb-1", text: "لا توجد بطاقات نماذج مطابقة للفلاتر الحالية" }),
             el("p", { class: "text-xs text-slate-400 mb-4", text: "جرب تغيير نص البحث، أو اختيار 'جميع المزودين'، أو النقر على زر إعادة تعيين الفلاتر." }),
             el("button", {
@@ -2050,20 +2089,20 @@ console.log(data.choices?.[0]?.message?.content);`}`;
                 el("div", { class: "flex items-center gap-1.5" },
                   el("span", { class: "code font-extrabold text-white text-sm truncate", dir: "ltr", text: m.name }),
                   m.verified ? icon("fa-solid fa-circle-check text-emerald-400 text-xs shrink-0") : null),
-                el("div", { class: "text-[11px] code text-slate-400 truncate mt-0.5", dir: "ltr", text: m.apiId })),
+                el("div", { class: "text-xs code text-slate-400 truncate mt-0.5", dir: "ltr", text: m.apiId })),
               badge(m.score)),
             el("div", { class: "flex items-center justify-between text-xs bg-slate-950/80 px-3 py-2 rounded-xl border border-slate-800" },
               el("span", { class: "font-bold text-emerald-400", text: prov?.name || m.providerId }),
               el("span", { class: "code text-cyan-300 font-bold", dir: "ltr", text: `Context: ${m.context}` })),
-            (m.aaIndex || m.gpqa) ? el("div", { class: "text-[11px] code text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg", text: `AA Index: ${m.aaIndex ?? "—"} | GPQA: ${m.gpqa ? m.gpqa + "%" : "—"}` }) : null,
-            el("div", { class: "flex flex-wrap gap-1" }, m.modalities.map(md => el("span", { class: "chip bg-slate-800 text-slate-300 text-[10px]", text: md }))),
-            el("div", { class: "grid grid-cols-2 gap-2 text-[11px] text-slate-400 pt-1" },
+            (m.aaIndex || m.gpqa) ? el("div", { class: "text-xs code text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg", text: `AA Index: ${m.aaIndex ?? "—"} | GPQA: ${m.gpqa ? m.gpqa + "%" : "—"}` }) : null,
+            el("div", { class: "flex flex-wrap gap-1" }, m.modalities.map(md => el("span", { class: "chip bg-slate-800 text-slate-300 text-xs", text: md }))),
+            el("div", { class: "grid grid-cols-2 gap-2 text-xs text-slate-400 pt-1" },
               el("div", { class: "truncate code", dir: "ltr", text: m.rateLimit || "راجع المزود" }),
               el("div", { class: "text-left code text-amber-400", dir: "ltr", text: m.weeklyTokens !== "—" ? `${m.weeklyTokens}/wk` : m.released }))),
           el("div", { class: "grid grid-cols-3 gap-1.5 pt-2 border-t border-slate-800" },
-            el("button", { class: "btn bg-slate-900 hover:bg-slate-800 text-slate-300 text-[11px] border border-slate-800", dataset: { action: "copy-id", model: m.id } }, icon("fa-regular fa-copy"), el("span", { text: "المعرّف" })),
-            el("button", { class: "btn bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 text-[11px]", dataset: { action: "codegen", model: m.id } }, icon("fa-solid fa-code"), el("span", { text: "كود" })),
-            el("button", { class: "btn bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 text-[11px]", dataset: { action: "test", model: m.id } }, icon("fa-solid fa-flask"), el("span", { text: "فحص" }))));
+            el("button", { class: "btn bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs border border-slate-800", dataset: { action: "copy-id", model: m.id } }, icon("fa-regular fa-copy"), el("span", { text: "المعرّف" })),
+            el("button", { class: "btn bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 text-xs", dataset: { action: "codegen", model: m.id } }, icon("fa-solid fa-code"), el("span", { text: "كود" })),
+            el("button", { class: "btn bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 text-xs", dataset: { action: "test", model: m.id } }, icon("fa-solid fa-flask"), el("span", { text: "فحص" }))));
       }));
 
       }
@@ -2078,14 +2117,14 @@ console.log(data.choices?.[0]?.message?.content);`}`;
         $("#catTableBody").replaceChildren(...filtered.map((m, idx) => {
         const prov = PROVIDER_MAP.get(m.providerId);
         return el("tr", { class: "hover:bg-slate-900/50 transition-colors" },
-          el("td", { class: "py-3 px-3 code text-slate-500", text: idx + 1 }),
+          el("td", { class: "py-3 px-3 code text-slate-400", text: idx + 1 }),
           el("td", { class: "py-3 px-4", dir: "ltr" },
-            el("div", { class: "code font-bold text-white flex items-center gap-1.5" }, el("span", { text: m.name }), m.verified ? icon("fa-solid fa-circle-check text-emerald-400 text-[11px]") : null),
-            el("div", { class: "text-[11px] code text-slate-500", text: m.apiId })),
+            el("div", { class: "code font-bold text-white flex items-center gap-1.5" }, el("span", { text: m.name }), m.verified ? icon("fa-solid fa-circle-check text-emerald-400 text-xs") : null),
+            el("div", { class: "text-xs code text-slate-400", text: m.apiId })),
           el("td", { class: "py-3 px-3 font-bold text-emerald-400", text: prov?.name || m.providerId }),
           el("td", { class: "py-3 px-3" }, badge(m.score)),
           el("td", { class: "py-3 px-3 code font-bold text-cyan-300", dir: "ltr", text: m.context }),
-          el("td", { class: "py-3 px-3" }, el("div", { class: "flex flex-wrap gap-1" }, m.modalities.map(md => el("span", { class: "chip bg-slate-800 text-slate-300 text-[10px]", text: md })))),
+          el("td", { class: "py-3 px-3" }, el("div", { class: "flex flex-wrap gap-1" }, m.modalities.map(md => el("span", { class: "chip bg-slate-800 text-slate-300 text-xs", text: md })))),
           el("td", { class: "py-3 px-3 code text-xs text-slate-300", dir: "ltr", text: m.rateLimit || "—" }),
           el("td", { class: "py-3 px-3 code text-xs text-slate-400", dir: "ltr", text: m.weeklyTokens !== "—" ? `${m.weeklyTokens}/wk` : m.released }),
           el("td", { class: "py-3 px-3" },
@@ -2121,14 +2160,14 @@ console.log(data.choices?.[0]?.message?.content);`}`;
                 el("div", { class: "flex items-center gap-2" },
                   el("h3", { class: "text-base font-extrabold text-white", text: p.name }),
                   el("span", { class: "chip code bg-slate-900 text-slate-400 border border-slate-800", text: `${provModels.length} نموذج` })),
-                el("a", { href: p.url, target: "_blank", rel: "noopener noreferrer", class: "text-[11px] text-emerald-400 hover:underline code", dir: "ltr", text: p.url })),
+                el("a", { href: p.url, target: "_blank", rel: "noopener noreferrer", class: "text-xs text-emerald-400 hover:underline code", dir: "ltr", text: p.url })),
               el("div", { class: "flex items-center gap-1.5" },
                 el("span", { class: `chip ${p.noCreditCard ? "bg-emerald-500/15 text-emerald-300" : "bg-amber-500/15 text-amber-300"}`, text: p.noCreditCard ? "بدون بطاقة" : "بطاقة/رصيد" }),
                 el("span", { class: `chip code ${p.browserCors ? "bg-cyan-500/15 text-cyan-300" : "bg-slate-800 text-slate-400"}`, text: p.browserCors ? "CORS OK" : "Server Only" }))),
             el("div", { class: "bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs space-y-1.5" },
-              el("div", { class: "flex items-center justify-between text-slate-400" }, el("span", { text: "Base URL:" }), el("code", { class: "code text-cyan-300 text-[11px]", dir: "ltr", text: p.baseUrl })),
-              el("div", { class: "flex items-center justify-between text-slate-400" }, el("span", { text: "متغير البيئة:" }), el("code", { class: "code text-emerald-400 text-[11px]", dir: "ltr", text: p.env })),
-              el("div", { class: "flex items-center justify-between text-slate-400" }, el("span", { text: "الحدود المعلنة:" }), el("span", { class: "font-bold text-white text-[11px]", dir: "ltr", text: p.limitsText }))),
+              el("div", { class: "flex items-center justify-between text-slate-400" }, el("span", { text: "Base URL:" }), el("code", { class: "code text-cyan-300 text-xs", dir: "ltr", text: p.baseUrl })),
+              el("div", { class: "flex items-center justify-between text-slate-400" }, el("span", { text: "متغير البيئة:" }), el("code", { class: "code text-emerald-400 text-xs", dir: "ltr", text: p.env })),
+              el("div", { class: "flex items-center justify-between text-slate-400" }, el("span", { text: "الحدود المعلنة:" }), el("span", { class: "font-bold text-white text-xs", dir: "ltr", text: p.limitsText }))),
             el("div", { class: "flex flex-wrap gap-1.5 pt-1" }, provModels.slice(0, 4).map(m => el("button", {
               class: "chip code bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-slate-800 transition-all cursor-pointer",
               dataset: { action: "codegen", model: m.id },
